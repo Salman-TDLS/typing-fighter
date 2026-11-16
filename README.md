@@ -24,12 +24,17 @@ Players face off in magical duels, using speed, elemental effects, and strategy 
 
 ## Project Planning
 
-- [Project board](PASTE-YOUR-BOARD-URL-HERE)
-- [Wireframe](./wireframe.png)
+[Project board](https://github.com/users/Salman-TDLS/projects/3) \
+Wireframe
+<img width="2013" height="1660" alt="Untitled-2026-11-16-1813" src="https://github.com/user-attachments/assets/fb504541-29f6-4312-b522-3efca2112f6a" />
+
+### Game Description
+
+A type the skill to make it work and attack type of game, magic fantasy theme.
 
 ### Sprint 1
 
-Goal: [Describe the result you want.]
+Goal: The player should be able to use all the skills to deal damage, see their cooldowns, and win or lose.
 
-Start: [Date]
-End: [Date]
+Start: 16 Nov
+End: 24 Nov
