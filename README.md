@@ -2,7 +2,9 @@
 
 A fast-paced, typing-based magic dueling game where players cast spells by typing their names before the timer runs out.
 
-## How to Play
+**Current status:** The start menu checks the `start` command when you press Enter.
+
+## Planned Gameplay
 
 Players face off in magical duels, using speed, elemental effects, and strategy to defeat their opponents.
 

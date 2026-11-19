@@ -1,0 +1,81 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: #181818;
+  color: #f2f2f2;
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  text-align: center;
+}
+
+main {
+  width: 100%;
+  max-width: 760px;
+  padding: 48px 0;
+}
+
+h1 {
+  margin: 0 0 36px;
+  font-size: 64px;
+}
+
+p, label {
+  color: #aaaaaa;
+  line-height: 1.6;
+}
+
+#start-word {
+  color: #ff6262;
+}
+
+#start-word.matched {
+  color: #61e68c;
+}
+
+input, button {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  margin: 24px auto;
+  padding: 20px;
+  border: none;
+  font: inherit;
+}
+
+input {
+  font-size: 28px;
+  background: #252525;
+  border-radius: 12px;
+  color: #f2f2f2;
+  text-align: center;
+}
+
+/* :focus: https://developer.mozilla.org/en-US/docs/Web/CSS/:focus
+   ::placeholder: https://developer.mozilla.org/en-US/docs/Web/CSS/::placeholder */
+input:focus::placeholder {
+  color: transparent;
+}
+
+button {
+  background: #eeeeee;
+  color: #181818;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #cccccc;
+}
+
+#message {
+  min-height: 22px;
+  font-size: 16px;
+}
