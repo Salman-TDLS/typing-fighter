@@ -2,7 +2,7 @@
 
 A fast-paced, typing-based magic dueling game where players cast spells by typing their names before the timer runs out.
 
-**Current status:** The start menu checks the `start` command when you press Enter.
+**Current status:** Type `start` and press Enter to open the solo arena. The player and enemy each start at 10 HP, and the cursor moves to the spell box. Combat is planned next.
 
 ## Planned Gameplay
 

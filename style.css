@@ -1,7 +1,9 @@
+/* Include padding and borders in element sizes */
 * {
   box-sizing: border-box;
 }
 
+/* Page background, font, and centered layout */
 body {
   margin: 0;
   min-height: 100vh;
@@ -16,22 +18,26 @@ body {
   text-align: center;
 }
 
+/* Menu width and spacing */
 main {
   width: 100%;
   max-width: 760px;
   padding: 48px 0;
 }
 
+/* Game title size and space below it */
 h1 {
   margin: 0 0 36px;
   font-size: 64px;
 }
 
+/* Instruction and feedback text */
 p, label {
   color: #aaaaaa;
   line-height: 1.6;
 }
 
+/* The bold word starts red and turns green when matched */
 #start-word {
   color: #ff6262;
 }
@@ -40,6 +46,7 @@ p, label {
   color: #61e68c;
 }
 
+/* Input and button width and spacing */
 input, button {
   display: block;
   width: 100%;
@@ -50,6 +57,7 @@ input, button {
   font: inherit;
 }
 
+/* Input background, corners, and text */
 input {
   font-size: 28px;
   background: #252525;
@@ -58,12 +66,14 @@ input {
   text-align: center;
 }
 
-/* :focus: https://developer.mozilla.org/en-US/docs/Web/CSS/:focus
+/* Hide the "here" hint when the input is selected.
+   :focus: https://developer.mozilla.org/en-US/docs/Web/CSS/:focus
    ::placeholder: https://developer.mozilla.org/en-US/docs/Web/CSS/::placeholder */
 input:focus::placeholder {
   color: transparent;
 }
 
+/* Button styles for when a button is added */
 button {
   background: #eeeeee;
   color: #181818;
@@ -75,7 +85,25 @@ button:hover {
   background: #cccccc;
 }
 
+/* Space and text size for the feedback message */
 #message {
   min-height: 22px;
   font-size: 16px;
+}
+
+/* Arena HP positions
+   position: fixed: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/position#fixed */
+.player-health, .enemy-health {
+  position: fixed;
+  margin: 0;
+}
+
+.player-health {
+  bottom: 24px;
+  left: 24px;
+}
+
+.enemy-health {
+  top: 24px;
+  right: 24px;
 }

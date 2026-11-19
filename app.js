@@ -2,6 +2,9 @@
 const command = document.querySelector('#command')
 const message = document.querySelector('#message')
 const startWord = document.querySelector('#start-word')
+const menu = document.querySelector('#menu')
+const arena = document.querySelector('#arena')
+const spell = document.querySelector('#spell')
 
 //_Functions______________________________________
 function isStartCommand() {
@@ -23,4 +26,7 @@ document.querySelector('#start-form').addEventListener('submit', (event) => {
   }
 
   message.textContent = ''
+  menu.hidden = true
+  arena.hidden = false
+  spell.focus()
 })
