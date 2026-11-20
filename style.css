@@ -46,8 +46,8 @@ p, label {
   color: #61e68c;
 }
 
-/* Input and button width and spacing */
-input, button {
+/* Input size and appearance */
+input {
   display: block;
   width: 100%;
   max-width: 220px;
@@ -55,10 +55,6 @@ input, button {
   padding: 20px;
   border: none;
   font: inherit;
-}
-
-/* Input background, corners, and text */
-input {
   font-size: 28px;
   background: #252525;
   border-radius: 12px;
@@ -71,18 +67,6 @@ input {
    ::placeholder: https://developer.mozilla.org/en-US/docs/Web/CSS/::placeholder */
 input:focus::placeholder {
   color: transparent;
-}
-
-/* Button styles for when a button is added */
-button {
-  background: #eeeeee;
-  color: #181818;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #cccccc;
 }
 
 /* Space and text size for the feedback message */
