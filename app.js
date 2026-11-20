@@ -5,20 +5,51 @@ const startWord = document.querySelector('#start-word')
 const menu = document.querySelector('#menu')
 const arena = document.querySelector('#arena')
 const spell = document.querySelector('#spell')
+const playerHpDisplay = document.querySelector('#player-hp')
 const enemyHpDisplay = document.querySelector('#enemy-hp')
 const timer = document.querySelector('#timer')
 
+// Both sides start with the spells in this list.
+const spells = [
+  { name: 'fire', damage: 1 }
+]
+
 //_Variables______________________________________
+let playerHp = 10
 let enemyHp = 10
+// slice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+const playerSpells = spells.slice()
+const enemySpells = spells.slice()
+let playerSpellIndex = -1 // No spell is locked in yet.
 
 //_Functions______________________________________
 function isStartCommand() {
   return command.value.trim().toLowerCase() === 'start'
 }
 
+// Apply both spells when the countdown ends.
+function castSpells(computerSpell) {
+  // splice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
+  if (playerSpellIndex !== -1) {
+    enemyHp = enemyHp - playerSpells[playerSpellIndex].damage
+    playerSpells.splice(playerSpellIndex, 1)
+    playerSpellIndex = -1
+  }
+
+  if (computerSpell) {
+    playerHp = playerHp - computerSpell.damage
+    enemySpells.splice(0, 1)
+  }
+
+  playerHpDisplay.textContent = playerHp
+  enemyHpDisplay.textContent = enemyHp
+}
+
 // Count down once a second and start the next round at zero.
 function startTimer() {
   let timeLeft = 3
+  // The computer chooses its first available spell at the start of each round.
+  let computerSpell = enemySpells[0]
   timer.textContent = timeLeft
 
   // setInterval: https://developer.mozilla.org/en-US/docs/Web/API/Window/setInterval
@@ -27,21 +58,19 @@ function startTimer() {
     timer.textContent = timeLeft
 
     if (timeLeft === 0) {
-      // Cast the locked spell when the round ends.
-      if (spell.disabled) {
-        enemyHp = enemyHp - 1
-        enemyHpDisplay.textContent = enemyHp
-      }
+      castSpells(computerSpell)
+      spell.value = ''
 
-      if (enemyHp === 0) {
+      if (playerHp === 0 || enemyHp === 0) {
         // clearInterval: https://developer.mozilla.org/en-US/docs/Web/API/Window/clearInterval
         clearInterval(countdown)
+        spell.disabled = true
         return
       }
 
+      computerSpell = enemySpells[0]
       timeLeft = 3
       timer.textContent = timeLeft
-      spell.value = ''
       // Allow typing again when the next round starts.
       spell.disabled = false
       spell.focus()
@@ -64,6 +93,7 @@ document.querySelector('#start-form').addEventListener('submit', (event) => {
   }
 
   message.textContent = ''
+  playerHpDisplay.textContent = playerHp
   enemyHpDisplay.textContent = enemyHp
   startTimer()
   menu.hidden = true
@@ -74,8 +104,17 @@ document.querySelector('#start-form').addEventListener('submit', (event) => {
 document.querySelector('#spell-form').addEventListener('submit', (event) => {
   event.preventDefault()
 
-  if (!spell.disabled && spell.value.trim().toLowerCase() === 'fire') {
-    // Disable the spell box after a valid spell is submitted.
-    spell.disabled = true
+  if (spell.disabled) {
+    return
+  }
+
+  const spellName = spell.value.trim().toLowerCase()
+  for (let index = 0; index < playerSpells.length; index = index + 1) {
+    if (playerSpells[index].name === spellName) {
+      // Lock the spell until the countdown ends.
+      playerSpellIndex = index
+      spell.disabled = true
+      return
+    }
   }
 })
