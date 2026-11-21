@@ -2,16 +2,19 @@
 
 A fast-paced, typing-based magic dueling game where players cast spells by typing their names before the timer runs out.
 
-**Current status:** Type `start` and press Enter to open the solo arena. Both sides start at 10 HP. Type `fire` in the spell box and press Enter to deal 1 damage. Enemy turns and win or loss messages are next.
+**Current status:** Type `start` and press Enter to open the solo arena. Both sides start at 10 HP.
+`fire`, `air`, `electric`, `water`, and `rock` each deal 1 damage. `cure` gives its caster 1 HP and deals no damage.
+Each side can use each spell once per duel. The countdown keeps running after both sides use all their spells.
+Special effects and a win or loss message are planned.
 
 ## Planned Gameplay
 
 Players face off in magical duels, using speed, elemental effects, and strategy to defeat their opponents.
 
-1. **Select a Spell** – Choose a spell to cast.
-2. **Type the Spell** – Enter the spell's name within the time limit.
-3. **Cast the Spell** – Type the spell correctly and press Enter to activate its effect.
-4. **Duel** – Use offensive and defensive spells to damage your opponent and protect yourself.
+1. **Choose a spell** – Pick one you haven't used in this duel.
+2. **Lock it in** – Type its name and press Enter before the 3-second countdown ends. The computer chooses its spell during the same countdown.
+3. **Cast together** – Both chosen spells take effect when the timer reaches zero.
+4. **Start the next round** – If both sides still have HP, the countdown resets and you can type again.
 
 ## Win and Lose Conditions
 

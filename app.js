@@ -10,8 +10,14 @@ const enemyHpDisplay = document.querySelector('#enemy-hp')
 const timer = document.querySelector('#timer')
 
 // Both sides start with the spells in this list.
+// Damage lowers the opponent's HP. Healing raises the caster's HP.
 const spells = [
-  { name: 'fire', damage: 1 }
+  { name: 'fire', damage: 1, healing: 0 },
+  { name: 'air', damage: 1, healing: 0 },
+  { name: 'electric', damage: 1, healing: 0 },
+  { name: 'water', damage: 1, healing: 0 },
+  { name: 'rock', damage: 1, healing: 0 },
+  { name: 'cure', damage: 0, healing: 1 }
 ]
 
 //_Variables______________________________________
@@ -31,13 +37,16 @@ function isStartCommand() {
 function castSpells(computerSpell) {
   // splice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
   if (playerSpellIndex !== -1) {
-    enemyHp = enemyHp - playerSpells[playerSpellIndex].damage
+    const playerSpell = playerSpells[playerSpellIndex]
+    enemyHp = enemyHp - playerSpell.damage
+    playerHp = playerHp + playerSpell.healing
     playerSpells.splice(playerSpellIndex, 1)
     playerSpellIndex = -1
   }
 
   if (computerSpell) {
     playerHp = playerHp - computerSpell.damage
+    enemyHp = enemyHp + computerSpell.healing
     enemySpells.splice(0, 1)
   }
 
