@@ -16,12 +16,27 @@
         <input id="command" type="text" placeholder="here" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="message">
         <p id="message" role="status"></p>
       </form>
+      <!-- details and summary: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details -->
+      <details class="instructions">
+        <summary>How to play</summary>
+        <p>Both sides start at 5 HP. Type an unused spell and press Enter to cast it. You go first, then the computer replies if it still has HP. Each side can use each spell once per duel.</p>
+        <p>You win if the computer reaches 0 HP and lose if you reach 0 HP. If both sides run out of spells, higher HP wins. Equal HP is a draw. Click Restart to play again.</p>
+        <h2>Spells</h2>
+        <ul>
+          <li><strong>fire</strong> deals 1 damage now and 1 Burn damage next round. Wet stops both.</li>
+          <li><strong>air</strong> deals 1 damage. If Burn also lands that round, the target takes 2 total.</li>
+          <li><strong>electric</strong> deals 1 damage, or 2 if the target is Wet.</li>
+          <li><strong>water</strong> deals 1 damage and breaks a Shield or makes an unshielded target Wet for the next round. If it puts out a Burn, neither Water nor Burn deals damage.</li>
+          <li><strong>rock</strong> deals no damage. It blocks damage for the rest of this round and the next, unless Water breaks the Shield.</li>
+          <li><strong>cure</strong> gives you 1 HP.</li>
+        </ul>
+      </details>
     </section>
     <section id="arena" hidden>
-      <h1>Arena</h1>
+      <h1 id="arena-title" aria-live="polite">Arena</h1>
       <div class="player-health">
         <p>
-          HP: <span id="player-hp">10</span>
+          HP: <span id="player-hp"></span>
           <span id="player-burn" class="effect-badge burn">Burn</span>
           <span id="player-wet" class="effect-badge wet">Wet</span>
           <span id="player-shield" class="effect-badge shield">Shield</span>
@@ -55,8 +70,10 @@
       </div>
       <form id="spell-form">
         <label for="spell">Type a spell and press Enter</label>
-        <input id="spell" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <input id="spell" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="spell-message">
+        <p id="spell-message" role="status"></p>
       </form>
+      <button id="restart-button" type="button" hidden>Restart</button>
     </section>
   </main>
 </body>

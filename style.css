@@ -69,10 +69,37 @@ input:focus::placeholder {
   color: transparent;
 }
 
-/* Space and text size for the feedback message */
-#message {
+/* Space and text size for feedback messages */
+#message, #spell-message {
   min-height: 22px;
   font-size: 16px;
+}
+
+#spell-message {
+  margin: 0;
+  color: #ff8f8f;
+}
+
+/* How to play panel on the start menu */
+.instructions {
+  max-width: 520px;
+  margin: 0 auto;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.instructions summary {
+  color: #ffda82;
+  cursor: pointer;
+}
+
+.instructions ul {
+  padding-left: 24px;
+  text-align: left;
+}
+
+.instructions li {
+  margin-bottom: 8px;
 }
 
 /* Arena HP positions
@@ -164,4 +191,15 @@ input:focus::placeholder {
 
 .round-result.healing {
   color: #81e6a7;
+}
+
+/* Restart button at the end of a duel */
+#restart-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  background: #493617;
+  color: #ffda82;
+  font: inherit;
+  cursor: pointer;
 }

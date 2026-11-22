@@ -4,7 +4,10 @@ const message = document.querySelector('#message')
 const startWord = document.querySelector('#start-word')
 const menu = document.querySelector('#menu')
 const arena = document.querySelector('#arena')
+const arenaTitle = document.querySelector('#arena-title')
 const spell = document.querySelector('#spell')
+const spellMessage = document.querySelector('#spell-message')
+const restartButton = document.querySelector('#restart-button')
 const playerHpDisplay = document.querySelector('#player-hp')
 const enemyHpDisplay = document.querySelector('#enemy-hp')
 const playerBurnBadge = document.querySelector('#player-burn')
@@ -15,6 +18,7 @@ const enemyWetBadge = document.querySelector('#enemy-wet')
 const enemyShieldBadge = document.querySelector('#enemy-shield')
 const playerRoundResult = document.querySelector('#player-round-result')
 const enemyRoundResult = document.querySelector('#enemy-round-result')
+const startingHp = 5
 
 // Both sides start with the spells in this list
 // Damage lowers the opponent's HP. Healing raises the caster's HP
@@ -28,13 +32,12 @@ const spells = [
 ]
 
 //_Variables______________________________________
-let playerHp = 10
-let enemyHp = 10
-const playerEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
-const enemyEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
-// slice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-const playerSpells = spells.slice()
-const enemySpells = spells.slice()
+let playerHp
+let enemyHp
+let playerEffects
+let enemyEffects
+let playerSpells
+let enemySpells
 
 //_Functions______________________________________
 function isStartCommand() {
@@ -126,6 +129,60 @@ function showRoundResult(display, hit, healing) {
   display.classList.toggle('healing', hit.damage === 0 && healing > 0)
 }
 
+// The side with more HP wins. Equal HP is a draw
+function showDuelResult() {
+  if (playerHp > enemyHp) {
+    arenaTitle.textContent = 'You win'
+  } else if (playerHp < enemyHp) {
+    arenaTitle.textContent = 'You lose'
+  } else {
+    arenaTitle.textContent = 'Draw'
+  }
+}
+
+// Update HP, effects, and which control the player can use
+function updateDuelDisplay(duelEnded) {
+  playerHpDisplay.textContent = playerHp
+  enemyHpDisplay.textContent = enemyHp
+  spell.disabled = duelEnded
+  restartButton.hidden = !duelEnded
+
+  playerBurnBadge.classList.toggle('active', !duelEnded && playerEffects.burnDamage > 0)
+  playerWetBadge.classList.toggle('active', !duelEnded && playerEffects.wet)
+  playerShieldBadge.classList.toggle('active', !duelEnded && playerEffects.shieldRounds > 0)
+  enemyBurnBadge.classList.toggle('active', !duelEnded && enemyEffects.burnDamage > 0)
+  enemyWetBadge.classList.toggle('active', !duelEnded && enemyEffects.wet)
+  enemyShieldBadge.classList.toggle('active', !duelEnded && enemyEffects.shieldRounds > 0)
+}
+
+// Reset both sides for the first duel or a restart
+function startDuel() {
+  playerHp = startingHp
+  enemyHp = startingHp
+  playerEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
+  enemyEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
+  // slice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+  playerSpells = spells.slice()
+  enemySpells = spells.slice()
+
+  arenaTitle.textContent = 'Arena'
+  spell.value = ''
+  spellMessage.textContent = ''
+  for (let index = 0; index < spells.length; index = index + 1) {
+    const name = spells[index].name
+    const playerIndicator = document.querySelector('#player-' + name)
+    const enemyIndicator = document.querySelector('#enemy-' + name)
+    playerIndicator.classList.toggle('used', false)
+    enemyIndicator.classList.toggle('used', false)
+  }
+
+  const noHit = { damage: 0, reason: '' }
+  showRoundResult(playerRoundResult, noHit, 0)
+  showRoundResult(enemyRoundResult, noHit, 0)
+  updateDuelDisplay(false)
+  spell.focus()
+}
+
 // The player casts first, then the computer has a turn
 function playRound(spellIndex) {
   const playerSpell = playerSpells[spellIndex]
@@ -176,18 +233,15 @@ function playRound(spellIndex) {
     enemyHp = 0
   }
 
-  playerHpDisplay.textContent = playerHp
-  enemyHpDisplay.textContent = enemyHp
+  // End the duel after a knockout or when both sides run out of spells
+  const noSpellsLeft = playerSpells.length === 0 && enemySpells.length === 0
+  const duelEnded = playerHp === 0 || enemyHp === 0 || noSpellsLeft
+  updateDuelDisplay(duelEnded)
+  if (duelEnded) {
+    showDuelResult()
+    restartButton.focus()
+  }
 
-  // Light up the effects that are active for the next round
-  const duelEnded = playerHp === 0 || enemyHp === 0
-  spell.disabled = duelEnded
-  playerBurnBadge.classList.toggle('active', !duelEnded && playerEffects.burnDamage > 0)
-  playerWetBadge.classList.toggle('active', !duelEnded && playerEffects.wet)
-  playerShieldBadge.classList.toggle('active', !duelEnded && playerEffects.shieldRounds > 0)
-  enemyBurnBadge.classList.toggle('active', !duelEnded && enemyEffects.burnDamage > 0)
-  enemyWetBadge.classList.toggle('active', !duelEnded && enemyEffects.wet)
-  enemyShieldBadge.classList.toggle('active', !duelEnded && enemyEffects.shieldRounds > 0)
   showRoundResult(playerRoundResult, playerHit, playerSpell.healing)
   showRoundResult(enemyRoundResult, enemyHit, enemyHealing)
 }
@@ -207,21 +261,24 @@ document.querySelector('#start-form').addEventListener('submit', (event) => {
   }
 
   message.textContent = ''
-  playerHpDisplay.textContent = playerHp
-  enemyHpDisplay.textContent = enemyHp
   menu.hidden = true
   arena.hidden = false
-  spell.focus()
+  startDuel()
 })
 
 document.querySelector('#spell-form').addEventListener('submit', (event) => {
   event.preventDefault()
 
-  if (spell.disabled) {
+  if (arena.hidden || spell.disabled) {
     return
   }
 
   const spellName = spell.value.trim().toLowerCase()
+  spellMessage.textContent = ''
+  if (spellName === '') {
+    return
+  }
+
   for (let index = 0; index < playerSpells.length; index = index + 1) {
     if (playerSpells[index].name === spellName) {
       playRound(index)
@@ -229,4 +286,16 @@ document.querySelector('#spell-form').addEventListener('submit', (event) => {
       return
     }
   }
+
+  // A spell in the full list but missing from the player's list was already used
+  for (let index = 0; index < spells.length; index = index + 1) {
+    if (spells[index].name === spellName) {
+      spellMessage.textContent = 'You already used ' + spellName + '.'
+      return
+    }
+  }
+
+  spellMessage.textContent = 'Unknown spell.'
 })
+
+restartButton.addEventListener('click', startDuel)

@@ -2,7 +2,7 @@
 
 A turn-based magic dueling game where players cast spells by typing their names.
 
-**Current status:** Type `start` and press Enter to open the solo arena. Both sides start at 10 HP.
+**Current status:** Type `start` and press Enter to open the solo arena. Both sides start at 5 HP.
 `fire` deals 1 damage on impact and adds 1 burn damage in the following round only. `air` deals 1 damage, for 2 total if the target takes burn damage that round.
 `water` normally deals 1 damage. It leaves an unshielded target wet for the next round, or breaks a `rock` shield and leaves the target dry.
 If `water` hits a target with a pending burn, it puts out the fire. Neither `water` nor the burn deals damage that round.
@@ -13,7 +13,7 @@ Each side can use each spell once per duel.
 The indicators under each side's HP are lit for ready spells. After a spell is cast, its indicator dims and is crossed out.
 Burn, Wet, and Shield badges stay visible beside both HP counters and light up while active.
 A line below each HP counter explains the last round's damage, healing, blocked hits, and combos.
-A win or loss message is planned.
+The arena shows the result when the duel ends. Click **Restart** to begin a new duel.
 
 ## Planned Gameplay
 
@@ -28,6 +28,7 @@ Players face off in magical duels, using speed, elemental effects, and strategy 
 
 - **Win** – Reduce your opponent's health to zero.
 - **Lose** – Your health reaches zero.
+- **Both sides out of spells** – Higher remaining HP wins. Equal HP is a draw.
 
 ## Features
 
