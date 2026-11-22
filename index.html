@@ -20,7 +20,13 @@
     <section id="arena" hidden>
       <h1>Arena</h1>
       <div class="player-health">
-        <p>HP: <span id="player-hp">10</span></p>
+        <p>
+          HP: <span id="player-hp">10</span>
+          <span id="player-burn" class="effect-badge burn">Burn</span>
+          <span id="player-wet" class="effect-badge wet">Wet</span>
+          <span id="player-shield" class="effect-badge shield">Shield</span>
+        </p>
+        <div id="player-round-result" class="round-result" role="status"></div>
         <div class="spell-indicators">
           <span id="player-fire">fire</span>
           <span id="player-air">air</span>
@@ -31,7 +37,13 @@
         </div>
       </div>
       <div class="enemy-health">
-        <p>Enemy HP: <span id="enemy-hp"></span></p>
+        <p>
+          Enemy HP: <span id="enemy-hp"></span>
+          <span id="enemy-burn" class="effect-badge burn">Burn</span>
+          <span id="enemy-wet" class="effect-badge wet">Wet</span>
+          <span id="enemy-shield" class="effect-badge shield">Shield</span>
+        </p>
+        <div id="enemy-round-result" class="round-result" role="status"></div>
         <div class="spell-indicators">
           <span id="enemy-fire">fire</span>
           <span id="enemy-air">air</span>

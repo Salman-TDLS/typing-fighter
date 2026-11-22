@@ -122,3 +122,46 @@ input:focus::placeholder {
   color: #aaaaaa;
   text-decoration: line-through;
 }
+
+/* Status badges stay dim until an effect is active */
+.effect-badge {
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 14px;
+  background: #252525;
+  color: #aaaaaa;
+}
+
+.effect-badge.active {
+  font-weight: bold;
+}
+
+.effect-badge.burn.active {
+  background: #542b20;
+  color: #ffb999;
+}
+
+.effect-badge.wet.active {
+  background: #213c56;
+  color: #a8dcff;
+}
+
+.effect-badge.shield.active {
+  background: #493617;
+  color: #ffda82;
+}
+
+/* Explain the last round's damage, healing, or blocked hit */
+.round-result {
+  color: #bdbdbd;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.round-result.damage {
+  color: #ff8f8f;
+}
+
+.round-result.healing {
+  color: #81e6a7;
+}

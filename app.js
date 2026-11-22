@@ -7,6 +7,14 @@ const arena = document.querySelector('#arena')
 const spell = document.querySelector('#spell')
 const playerHpDisplay = document.querySelector('#player-hp')
 const enemyHpDisplay = document.querySelector('#enemy-hp')
+const playerBurnBadge = document.querySelector('#player-burn')
+const playerWetBadge = document.querySelector('#player-wet')
+const playerShieldBadge = document.querySelector('#player-shield')
+const enemyBurnBadge = document.querySelector('#enemy-burn')
+const enemyWetBadge = document.querySelector('#enemy-wet')
+const enemyShieldBadge = document.querySelector('#enemy-shield')
+const playerRoundResult = document.querySelector('#player-round-result')
+const enemyRoundResult = document.querySelector('#enemy-round-result')
 const timer = document.querySelector('#timer')
 
 // Both sides start with the spells in this list
@@ -40,6 +48,7 @@ function resolveDamage(effects, incomingSpell) {
   // Wet and burn from the previous round expire after this round
   const wasWet = effects.wet
   const burnDamage = effects.burnDamage
+  let reason = ''
   effects.wet = false
   effects.burnDamage = 0
 
@@ -47,38 +56,77 @@ function resolveDamage(effects, incomingSpell) {
   if (incomingSpell && incomingSpell.breaksShield) {
     if (effects.shieldRounds > 0) {
       effects.shieldRounds = 0
+      reason = 'Water broke the shield'
     } else {
       effects.wet = true
     }
     // If water puts out a burn, neither water nor the burn deals damage
     if (burnDamage > 0) {
-      return 0
+      return { damage: 0, reason: 'Water put out the burn' }
     }
   }
 
   // A shield blocks this round's damage and uses up one of its two rounds
   if (effects.shieldRounds > 0) {
     effects.shieldRounds = effects.shieldRounds - 1
-    return 0
+    if (burnDamage > 0 || (incomingSpell && incomingSpell.damage > 0)) {
+      reason = 'Rock blocked damage'
+    }
+    return { damage: 0, reason: reason }
   }
 
   if (!incomingSpell) {
-    return burnDamage
+    if (burnDamage > 0) {
+      reason = 'Burn'
+    }
+    return { damage: burnDamage, reason: reason }
   }
 
   // Wet stops fire before it deals damage or starts a burn
   if (wasWet && incomingSpell.name === 'fire') {
-    return burnDamage
+    return { damage: burnDamage, reason: 'Wet stopped fire' }
   }
 
   let damage = burnDamage + incomingSpell.damage
+  if (incomingSpell.damage > 0 && reason === '') {
+    reason = incomingSpell.name
+  }
   if (incomingSpell.burnDamage) {
     effects.burnDamage = incomingSpell.burnDamage
   }
   if (wasWet && incomingSpell.wetBonusDamage) {
     damage = damage + incomingSpell.wetBonusDamage
+    reason = 'Electric + Wet'
   }
-  return damage
+  if (burnDamage > 0) {
+    if (reason === '') {
+      reason = 'Burn'
+    } else {
+      reason = reason + ' + Burn'
+    }
+  }
+  return { damage: damage, reason: reason }
+}
+
+// Show what changed HP in the round that just ended
+function showRoundResult(display, hit, healing) {
+  let text = hit.reason
+  if (hit.damage > 0) {
+    text = '-' + hit.damage + ' HP · ' + text
+  } else if (text !== '') {
+    text = '0 damage · ' + text
+  }
+
+  if (healing > 0) {
+    if (text !== '') {
+      text = text + ' · '
+    }
+    text = text + '+' + healing + ' HP · Cure'
+  }
+
+  display.textContent = text
+  display.classList.toggle('damage', hit.damage > 0)
+  display.classList.toggle('healing', hit.damage === 0 && healing > 0)
 }
 
 // Apply both spells when the countdown ends
@@ -102,15 +150,21 @@ function castSpells(computerSpell) {
     enemyEffects.shieldRounds = computerSpell.shieldRounds
   }
 
-  playerHp = playerHp - resolveDamage(playerEffects, computerSpell)
-  enemyHp = enemyHp - resolveDamage(enemyEffects, playerSpell)
+  const playerHit = resolveDamage(playerEffects, computerSpell)
+  const enemyHit = resolveDamage(enemyEffects, playerSpell)
+  playerHp = playerHp - playerHit.damage
+  enemyHp = enemyHp - enemyHit.damage
 
+  let playerHealing = 0
+  let enemyHealing = 0
   if (playerSpell) {
-    playerHp = playerHp + playerSpell.healing
+    playerHealing = playerSpell.healing
+    playerHp = playerHp + playerHealing
   }
 
   if (computerSpell) {
-    enemyHp = enemyHp + computerSpell.healing
+    enemyHealing = computerSpell.healing
+    enemyHp = enemyHp + enemyHealing
     enemySpells.splice(0, 1)
     const indicator = document.querySelector('#enemy-' + computerSpell.name)
     indicator.classList.toggle('used', true)
@@ -126,6 +180,17 @@ function castSpells(computerSpell) {
 
   playerHpDisplay.textContent = playerHp
   enemyHpDisplay.textContent = enemyHp
+
+  // Light up the effects that are active for the next round
+  const duelEnded = playerHp === 0 || enemyHp === 0
+  playerBurnBadge.classList.toggle('active', !duelEnded && playerEffects.burnDamage > 0)
+  playerWetBadge.classList.toggle('active', !duelEnded && playerEffects.wet)
+  playerShieldBadge.classList.toggle('active', !duelEnded && playerEffects.shieldRounds > 0)
+  enemyBurnBadge.classList.toggle('active', !duelEnded && enemyEffects.burnDamage > 0)
+  enemyWetBadge.classList.toggle('active', !duelEnded && enemyEffects.wet)
+  enemyShieldBadge.classList.toggle('active', !duelEnded && enemyEffects.shieldRounds > 0)
+  showRoundResult(playerRoundResult, playerHit, playerHealing)
+  showRoundResult(enemyRoundResult, enemyHit, enemyHealing)
 }
 
 // Count down once a second and start the next round at zero

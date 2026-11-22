@@ -11,6 +11,8 @@ While wet, a target takes no damage or burn from `fire` and takes 2 damage from 
 `rock` deals no damage and shields its caster for the current round and the next. `cure` gives its caster 1 HP and deals no damage.
 Each side can use each spell once per duel. The countdown keeps running after both sides use all their spells.
 The indicators under each side's HP are lit for ready spells. When a spell casts at zero, its indicator dims and is crossed out.
+Burn, Wet, and Shield badges stay visible beside both HP counters and light up while active.
+A line below each HP counter explains the last round's damage, healing, blocked hits, and combos.
 A win or loss message is planned.
 
 ## Planned Gameplay
