@@ -19,8 +19,28 @@
     </section>
     <section id="arena" hidden>
       <h1>Arena</h1>
-      <p class="player-health">HP: <span id="player-hp">10</span></p>
-      <p class="enemy-health">Enemy HP: <span id="enemy-hp"></span></p>
+      <div class="player-health">
+        <p>HP: <span id="player-hp">10</span></p>
+        <div class="spell-indicators">
+          <span id="player-fire">fire</span>
+          <span id="player-air">air</span>
+          <span id="player-electric">electric</span>
+          <span id="player-water">water</span>
+          <span id="player-rock">rock</span>
+          <span id="player-cure">cure</span>
+        </div>
+      </div>
+      <div class="enemy-health">
+        <p>Enemy HP: <span id="enemy-hp"></span></p>
+        <div class="spell-indicators">
+          <span id="enemy-fire">fire</span>
+          <span id="enemy-air">air</span>
+          <span id="enemy-electric">electric</span>
+          <span id="enemy-water">water</span>
+          <span id="enemy-rock">rock</span>
+          <span id="enemy-cure">cure</span>
+        </div>
+      </div>
       <p>Time left: <span id="timer"></span>s</p>
       <form id="spell-form">
         <label for="spell">Type a spell and press Enter</label>

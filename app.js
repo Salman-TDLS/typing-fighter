@@ -9,55 +9,93 @@ const playerHpDisplay = document.querySelector('#player-hp')
 const enemyHpDisplay = document.querySelector('#enemy-hp')
 const timer = document.querySelector('#timer')
 
-// Both sides start with the spells in this list.
-// Damage lowers the opponent's HP. Healing raises the caster's HP.
+// Both sides start with the spells in this list
+// Damage lowers the opponent's HP. Healing raises the caster's HP
 const spells = [
   { name: 'fire', damage: 1, healing: 0 },
   { name: 'air', damage: 1, healing: 0 },
   { name: 'electric', damage: 1, healing: 0 },
-  { name: 'water', damage: 1, healing: 0 },
-  { name: 'rock', damage: 1, healing: 0 },
+  { name: 'water', damage: 1, healing: 0, breaksShield: true },
+  { name: 'rock', damage: 0, healing: 0, shieldRounds: 2 },
   { name: 'cure', damage: 0, healing: 1 }
 ]
 
 //_Variables______________________________________
 let playerHp = 10
 let enemyHp = 10
+let playerShieldRounds = 0
+let enemyShieldRounds = 0
 // slice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
 const playerSpells = spells.slice()
 const enemySpells = spells.slice()
-let playerSpellIndex = -1 // No spell is locked in yet.
+let playerSpellIndex = -1 // No spell is locked in yet
 
 //_Functions______________________________________
 function isStartCommand() {
   return command.value.trim().toLowerCase() === 'start'
 }
 
-// Apply both spells when the countdown ends.
+// Apply both spells when the countdown ends
 function castSpells(computerSpell) {
+  let playerSpell = null
   // splice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
   if (playerSpellIndex !== -1) {
-    const playerSpell = playerSpells[playerSpellIndex]
-    enemyHp = enemyHp - playerSpell.damage
-    playerHp = playerHp + playerSpell.healing
+    playerSpell = playerSpells[playerSpellIndex]
     playerSpells.splice(playerSpellIndex, 1)
     playerSpellIndex = -1
+    // Dim the spell after it casts, when the countdown ends
+    const indicator = document.querySelector('#player-' + playerSpell.name)
+    indicator.classList.toggle('used', true)
+  }
+
+  // Put up both shields before applying either attack
+  if (playerSpell && playerSpell.shieldRounds) {
+    playerShieldRounds = playerSpell.shieldRounds
+  }
+  if (computerSpell && computerSpell.shieldRounds) {
+    enemyShieldRounds = computerSpell.shieldRounds
+  }
+
+  // Water removes a shield before dealing damage
+  if (playerSpell) {
+    if (playerSpell.breaksShield) {
+      enemyShieldRounds = 0
+    }
+    if (enemyShieldRounds === 0) {
+      enemyHp = enemyHp - playerSpell.damage
+    }
+    playerHp = playerHp + playerSpell.healing
   }
 
   if (computerSpell) {
-    playerHp = playerHp - computerSpell.damage
+    if (computerSpell.breaksShield) {
+      playerShieldRounds = 0
+    }
+    if (playerShieldRounds === 0) {
+      playerHp = playerHp - computerSpell.damage
+    }
     enemyHp = enemyHp + computerSpell.healing
     enemySpells.splice(0, 1)
+    const indicator = document.querySelector('#enemy-' + computerSpell.name)
+    indicator.classList.toggle('used', true)
+  }
+
+  // The casting round counts as the first of the shield's two rounds
+  if (playerShieldRounds > 0) {
+    playerShieldRounds = playerShieldRounds - 1
+  }
+  if (enemyShieldRounds > 0) {
+    enemyShieldRounds = enemyShieldRounds - 1
   }
 
   playerHpDisplay.textContent = playerHp
   enemyHpDisplay.textContent = enemyHp
 }
 
-// Count down once a second and start the next round at zero.
+// Count down once a second and start the next round at zero
 function startTimer() {
   let timeLeft = 3
-  // The computer chooses its first available spell at the start of each round.
+  // The computer chooses its first available spell at the start of each round
   let computerSpell = enemySpells[0]
   timer.textContent = timeLeft
 
@@ -80,7 +118,7 @@ function startTimer() {
       computerSpell = enemySpells[0]
       timeLeft = 3
       timer.textContent = timeLeft
-      // Allow typing again when the next round starts.
+      // Allow typing again when the next round starts
       spell.disabled = false
       spell.focus()
     }

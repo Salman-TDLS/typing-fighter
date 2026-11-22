@@ -3,9 +3,11 @@
 A fast-paced, typing-based magic dueling game where players cast spells by typing their names before the timer runs out.
 
 **Current status:** Type `start` and press Enter to open the solo arena. Both sides start at 10 HP.
-`fire`, `air`, `electric`, `water`, and `rock` each deal 1 damage. `cure` gives its caster 1 HP and deals no damage.
+`fire`, `air`, `electric`, and `water` each deal 1 damage. `cure` gives its caster 1 HP and deals no damage.
+`rock` deals no damage and shields its caster for the current round and the next. `water` breaks an active shield and still deals 1 damage.
 Each side can use each spell once per duel. The countdown keeps running after both sides use all their spells.
-Special effects and a win or loss message are planned.
+The indicators under each side's HP are lit for ready spells. When a spell casts at zero, its indicator dims and is crossed out.
+Other spell effects and a win or loss message are planned.
 
 ## Planned Gameplay
 

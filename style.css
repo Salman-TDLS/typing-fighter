@@ -79,15 +79,46 @@ input:focus::placeholder {
    position: fixed: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/position#fixed */
 .player-health, .enemy-health {
   position: fixed;
-  margin: 0;
+  max-width: 85%;
+}
+
+.player-health p, .enemy-health p {
+  margin: 0 0 8px;
 }
 
 .player-health {
   bottom: 24px;
   left: 24px;
+  text-align: left;
 }
 
 .enemy-health {
   top: 24px;
   right: 24px;
+  text-align: right;
+}
+
+/* Show ready spells in gold and cross out used spells */
+.spell-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.enemy-health .spell-indicators {
+  justify-content: flex-end;
+}
+
+.spell-indicators span {
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: #493617;
+  color: #ffda82;
+}
+
+.spell-indicators .used {
+  background: #252525;
+  color: #aaaaaa;
+  text-decoration: line-through;
 }
