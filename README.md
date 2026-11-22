@@ -3,11 +3,15 @@
 A fast-paced, typing-based magic dueling game where players cast spells by typing their names before the timer runs out.
 
 **Current status:** Type `start` and press Enter to open the solo arena. Both sides start at 10 HP.
-`fire`, `air`, `electric`, and `water` each deal 1 damage. `cure` gives its caster 1 HP and deals no damage.
-`rock` deals no damage and shields its caster for the current round and the next. `water` breaks an active shield and still deals 1 damage.
+`fire` deals 1 damage on impact and adds 1 burn damage in the following round only. `air` deals 1 damage, for 2 total if the target takes burn damage that round.
+`water` normally deals 1 damage. It leaves an unshielded target wet for the next round, or breaks a `rock` shield and leaves the target dry.
+If `water` hits a target with a pending burn, it puts out the fire. Neither `water` nor the burn deals damage that round.
+An unshielded target still becomes wet when `water` puts out a burn. Wet wears off at the end of the following round.
+While wet, a target takes no damage or burn from `fire` and takes 2 damage from `electric` instead of 1.
+`rock` deals no damage and shields its caster for the current round and the next. `cure` gives its caster 1 HP and deals no damage.
 Each side can use each spell once per duel. The countdown keeps running after both sides use all their spells.
 The indicators under each side's HP are lit for ready spells. When a spell casts at zero, its indicator dims and is crossed out.
-Other spell effects and a win or loss message are planned.
+A win or loss message is planned.
 
 ## Planned Gameplay
 

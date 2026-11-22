@@ -12,9 +12,9 @@ const timer = document.querySelector('#timer')
 // Both sides start with the spells in this list
 // Damage lowers the opponent's HP. Healing raises the caster's HP
 const spells = [
-  { name: 'fire', damage: 1, healing: 0 },
+  { name: 'fire', damage: 1, healing: 0, burnDamage: 1 },
   { name: 'air', damage: 1, healing: 0 },
-  { name: 'electric', damage: 1, healing: 0 },
+  { name: 'electric', damage: 1, healing: 0, wetBonusDamage: 1 },
   { name: 'water', damage: 1, healing: 0, breaksShield: true },
   { name: 'rock', damage: 0, healing: 0, shieldRounds: 2 },
   { name: 'cure', damage: 0, healing: 1 }
@@ -23,8 +23,8 @@ const spells = [
 //_Variables______________________________________
 let playerHp = 10
 let enemyHp = 10
-let playerShieldRounds = 0
-let enemyShieldRounds = 0
+const playerEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
+const enemyEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
 // slice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
 const playerSpells = spells.slice()
 const enemySpells = spells.slice()
@@ -33,6 +33,52 @@ let playerSpellIndex = -1 // No spell is locked in yet
 //_Functions______________________________________
 function isStartCommand() {
   return command.value.trim().toLowerCase() === 'start'
+}
+
+// Work out one side's incoming damage and its effects for the next round
+function resolveDamage(effects, incomingSpell) {
+  // Wet and burn from the previous round expire after this round
+  const wasWet = effects.wet
+  const burnDamage = effects.burnDamage
+  effects.wet = false
+  effects.burnDamage = 0
+
+  // Water breaks a shield or makes an unshielded target wet next round
+  if (incomingSpell && incomingSpell.breaksShield) {
+    if (effects.shieldRounds > 0) {
+      effects.shieldRounds = 0
+    } else {
+      effects.wet = true
+    }
+    // If water puts out a burn, neither water nor the burn deals damage
+    if (burnDamage > 0) {
+      return 0
+    }
+  }
+
+  // A shield blocks this round's damage and uses up one of its two rounds
+  if (effects.shieldRounds > 0) {
+    effects.shieldRounds = effects.shieldRounds - 1
+    return 0
+  }
+
+  if (!incomingSpell) {
+    return burnDamage
+  }
+
+  // Wet stops fire before it deals damage or starts a burn
+  if (wasWet && incomingSpell.name === 'fire') {
+    return burnDamage
+  }
+
+  let damage = burnDamage + incomingSpell.damage
+  if (incomingSpell.burnDamage) {
+    effects.burnDamage = incomingSpell.burnDamage
+  }
+  if (wasWet && incomingSpell.wetBonusDamage) {
+    damage = damage + incomingSpell.wetBonusDamage
+  }
+  return damage
 }
 
 // Apply both spells when the countdown ends
@@ -50,42 +96,32 @@ function castSpells(computerSpell) {
 
   // Put up both shields before applying either attack
   if (playerSpell && playerSpell.shieldRounds) {
-    playerShieldRounds = playerSpell.shieldRounds
+    playerEffects.shieldRounds = playerSpell.shieldRounds
   }
   if (computerSpell && computerSpell.shieldRounds) {
-    enemyShieldRounds = computerSpell.shieldRounds
+    enemyEffects.shieldRounds = computerSpell.shieldRounds
   }
 
-  // Water removes a shield before dealing damage
+  playerHp = playerHp - resolveDamage(playerEffects, computerSpell)
+  enemyHp = enemyHp - resolveDamage(enemyEffects, playerSpell)
+
   if (playerSpell) {
-    if (playerSpell.breaksShield) {
-      enemyShieldRounds = 0
-    }
-    if (enemyShieldRounds === 0) {
-      enemyHp = enemyHp - playerSpell.damage
-    }
     playerHp = playerHp + playerSpell.healing
   }
 
   if (computerSpell) {
-    if (computerSpell.breaksShield) {
-      playerShieldRounds = 0
-    }
-    if (playerShieldRounds === 0) {
-      playerHp = playerHp - computerSpell.damage
-    }
     enemyHp = enemyHp + computerSpell.healing
     enemySpells.splice(0, 1)
     const indicator = document.querySelector('#enemy-' + computerSpell.name)
     indicator.classList.toggle('used', true)
   }
 
-  // The casting round counts as the first of the shield's two rounds
-  if (playerShieldRounds > 0) {
-    playerShieldRounds = playerShieldRounds - 1
+  // Keep HP at zero if a hit deals more damage than the target has left
+  if (playerHp < 0) {
+    playerHp = 0
   }
-  if (enemyShieldRounds > 0) {
-    enemyShieldRounds = enemyShieldRounds - 1
+  if (enemyHp < 0) {
+    enemyHp = 0
   }
 
   playerHpDisplay.textContent = playerHp
