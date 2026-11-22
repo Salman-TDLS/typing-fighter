@@ -15,7 +15,6 @@ const enemyWetBadge = document.querySelector('#enemy-wet')
 const enemyShieldBadge = document.querySelector('#enemy-shield')
 const playerRoundResult = document.querySelector('#player-round-result')
 const enemyRoundResult = document.querySelector('#enemy-round-result')
-const timer = document.querySelector('#timer')
 
 // Both sides start with the spells in this list
 // Damage lowers the opponent's HP. Healing raises the caster's HP
@@ -36,7 +35,6 @@ const enemyEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
 // slice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
 const playerSpells = spells.slice()
 const enemySpells = spells.slice()
-let playerSpellIndex = -1 // No spell is locked in yet
 
 //_Functions______________________________________
 function isStartCommand() {
@@ -66,9 +64,8 @@ function resolveDamage(effects, incomingSpell) {
     }
   }
 
-  // A shield blocks this round's damage and uses up one of its two rounds
+  // An active shield blocks damage
   if (effects.shieldRounds > 0) {
-    effects.shieldRounds = effects.shieldRounds - 1
     if (burnDamage > 0 || (incomingSpell && incomingSpell.damage > 0)) {
       reason = 'Rock blocked damage'
     }
@@ -106,7 +103,7 @@ function resolveDamage(effects, incomingSpell) {
     }
   }
   return { damage: damage, reason: reason }
-}
+} 
 
 // Show what changed HP in the round that just ended
 function showRoundResult(display, hit, healing) {
@@ -129,45 +126,46 @@ function showRoundResult(display, hit, healing) {
   display.classList.toggle('healing', hit.damage === 0 && healing > 0)
 }
 
-// Apply both spells when the countdown ends
-function castSpells(computerSpell) {
-  let playerSpell = null
+// The player casts first, then the computer has a turn
+function playRound(spellIndex) {
+  const playerSpell = playerSpells[spellIndex]
   // splice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
-  if (playerSpellIndex !== -1) {
-    playerSpell = playerSpells[playerSpellIndex]
-    playerSpells.splice(playerSpellIndex, 1)
-    playerSpellIndex = -1
-    // Dim the spell after it casts, when the countdown ends
-    const indicator = document.querySelector('#player-' + playerSpell.name)
-    indicator.classList.toggle('used', true)
-  }
+  playerSpells.splice(spellIndex, 1)
+  const playerIndicator = document.querySelector('#player-' + playerSpell.name)
+  playerIndicator.classList.toggle('used', true)
 
-  // Put up both shields before applying either attack
-  if (playerSpell && playerSpell.shieldRounds) {
+  if (playerSpell.shieldRounds) {
     playerEffects.shieldRounds = playerSpell.shieldRounds
   }
-  if (computerSpell && computerSpell.shieldRounds) {
-    enemyEffects.shieldRounds = computerSpell.shieldRounds
-  }
-
-  const playerHit = resolveDamage(playerEffects, computerSpell)
   const enemyHit = resolveDamage(enemyEffects, playerSpell)
-  playerHp = playerHp - playerHit.damage
   enemyHp = enemyHp - enemyHit.damage
+  playerHp = playerHp + playerSpell.healing
 
-  let playerHealing = 0
+  let playerHit = { damage: 0, reason: '' }
   let enemyHealing = 0
-  if (playerSpell) {
-    playerHealing = playerSpell.healing
-    playerHp = playerHp + playerHealing
+  // A computer at zero HP cannot cast back
+  if (enemyHp > 0) {
+    const computerSpell = enemySpells[0]
+    if (computerSpell && computerSpell.shieldRounds) {
+      enemyEffects.shieldRounds = computerSpell.shieldRounds
+    }
+    playerHit = resolveDamage(playerEffects, computerSpell)
+    playerHp = playerHp - playerHit.damage
+    if (computerSpell) {
+      enemyHealing = computerSpell.healing
+      enemyHp = enemyHp + enemyHealing
+      enemySpells.splice(0, 1)
+      const enemyIndicator = document.querySelector('#enemy-' + computerSpell.name)
+      enemyIndicator.classList.toggle('used', true)
+    }
   }
 
-  if (computerSpell) {
-    enemyHealing = computerSpell.healing
-    enemyHp = enemyHp + enemyHealing
-    enemySpells.splice(0, 1)
-    const indicator = document.querySelector('#enemy-' + computerSpell.name)
-    indicator.classList.toggle('used', true)
+  // Age both shields once per round, after both turns
+  if (playerEffects.shieldRounds > 0) {
+    playerEffects.shieldRounds = playerEffects.shieldRounds - 1
+  }
+  if (enemyEffects.shieldRounds > 0) {
+    enemyEffects.shieldRounds = enemyEffects.shieldRounds - 1
   }
 
   // Keep HP at zero if a hit deals more damage than the target has left
@@ -183,47 +181,15 @@ function castSpells(computerSpell) {
 
   // Light up the effects that are active for the next round
   const duelEnded = playerHp === 0 || enemyHp === 0
+  spell.disabled = duelEnded
   playerBurnBadge.classList.toggle('active', !duelEnded && playerEffects.burnDamage > 0)
   playerWetBadge.classList.toggle('active', !duelEnded && playerEffects.wet)
   playerShieldBadge.classList.toggle('active', !duelEnded && playerEffects.shieldRounds > 0)
   enemyBurnBadge.classList.toggle('active', !duelEnded && enemyEffects.burnDamage > 0)
   enemyWetBadge.classList.toggle('active', !duelEnded && enemyEffects.wet)
   enemyShieldBadge.classList.toggle('active', !duelEnded && enemyEffects.shieldRounds > 0)
-  showRoundResult(playerRoundResult, playerHit, playerHealing)
+  showRoundResult(playerRoundResult, playerHit, playerSpell.healing)
   showRoundResult(enemyRoundResult, enemyHit, enemyHealing)
-}
-
-// Count down once a second and start the next round at zero
-function startTimer() {
-  let timeLeft = 3
-  // The computer chooses its first available spell at the start of each round
-  let computerSpell = enemySpells[0]
-  timer.textContent = timeLeft
-
-  // setInterval: https://developer.mozilla.org/en-US/docs/Web/API/Window/setInterval
-  const countdown = setInterval(() => {
-    timeLeft = timeLeft - 1
-    timer.textContent = timeLeft
-
-    if (timeLeft === 0) {
-      castSpells(computerSpell)
-      spell.value = ''
-
-      if (playerHp === 0 || enemyHp === 0) {
-        // clearInterval: https://developer.mozilla.org/en-US/docs/Web/API/Window/clearInterval
-        clearInterval(countdown)
-        spell.disabled = true
-        return
-      }
-
-      computerSpell = enemySpells[0]
-      timeLeft = 3
-      timer.textContent = timeLeft
-      // Allow typing again when the next round starts
-      spell.disabled = false
-      spell.focus()
-    }
-  }, 1000)
 }
 
 //_Event listeners________________________________
@@ -243,7 +209,6 @@ document.querySelector('#start-form').addEventListener('submit', (event) => {
   message.textContent = ''
   playerHpDisplay.textContent = playerHp
   enemyHpDisplay.textContent = enemyHp
-  startTimer()
   menu.hidden = true
   arena.hidden = false
   spell.focus()
@@ -259,9 +224,8 @@ document.querySelector('#spell-form').addEventListener('submit', (event) => {
   const spellName = spell.value.trim().toLowerCase()
   for (let index = 0; index < playerSpells.length; index = index + 1) {
     if (playerSpells[index].name === spellName) {
-      // Lock the spell until the countdown ends.
-      playerSpellIndex = index
-      spell.disabled = true
+      playRound(index)
+      spell.value = ''
       return
     }
   }
