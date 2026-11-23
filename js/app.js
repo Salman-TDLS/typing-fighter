@@ -39,15 +39,22 @@ const playerRoundResult = document.querySelector('#player-round-result')
 const enemyRoundResult = document.querySelector('#enemy-round-result')
 const startingHp = 5
 
-// Both sides start with the spells in this list
 // Damage lowers the opponent's HP. Healing raises the caster's HP
-const spells = [
-  { name: 'fire', damage: 1, healing: 0, burnDamage: 1 },
-  { name: 'air', damage: 1, healing: 0 },
-  { name: 'electric', damage: 1, healing: 0, wetBonusDamage: 1 },
-  { name: 'water', damage: 1, healing: 0, breaksShield: true },
-  { name: 'rock', damage: 0, healing: 0, shieldRounds: 2 },
-  { name: 'cure', damage: 0, healing: 1 }
+const fire = { name: 'fire', damage: 1, healing: 0, burnDamage: 1 }
+const air = { name: 'air', damage: 1, healing: 0 }
+const electric = { name: 'electric', damage: 1, healing: 0, wetBonusDamage: 1 }
+const water = { name: 'water', damage: 1, healing: 0, breaksShield: true }
+const rock = { name: 'rock', damage: 0, healing: 0, shieldRounds: 2 }
+const cure = { name: 'cure', damage: 0, healing: 1 }
+const spells = [fire, air, electric, water, rock, cure]
+
+// The computer uses one of these spell orders per duel
+const computerSpellOrders = [
+  [fire, air, rock, water, electric, cure], // Burn combo first
+  [water, electric, fire, air, rock, cure], // Wet combo first
+  [rock, water, electric, cure, fire, air], // Shield first
+  [air, cure, rock, water, electric, fire], // Heal early
+  [electric, fire, air, cure, rock, water] // Attack first
 ]
 
 //_Variables______________________________________
@@ -57,6 +64,7 @@ let playerEffects
 let enemyEffects
 let playerSpells
 let enemySpells
+let lastComputerOrder = -1
 const shieldRemovalTimers = []
 
 //_Functions______________________________________
@@ -153,7 +161,22 @@ function startDuel() {
   enemyEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
   // slice: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
   playerSpells = spells.slice()
-  enemySpells = spells.slice()
+
+  // Pick from all five orders at first, then leave out the last one
+  let orderCount = computerSpellOrders.length
+  if (lastComputerOrder >= 0) {
+    orderCount = orderCount - 1
+  }
+
+  // Math.random: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+  // Math.floor: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/floor
+  let orderIndex = Math.floor(Math.random() * orderCount)
+  // Skip the position of the previous order
+  if (lastComputerOrder >= 0 && orderIndex >= lastComputerOrder) {
+    orderIndex = orderIndex + 1
+  }
+  lastComputerOrder = orderIndex
+  enemySpells = computerSpellOrders[orderIndex].slice()
 
   arenaTitle.textContent = 'Arena'
   spell.value = ''
@@ -330,7 +353,7 @@ function showHearts(display, hp, fighterName) {
   display.setAttribute('aria-label', fighterName + ' has ' + hp + ' health points')
 }
 
-// Keep the HUD icon and the matching battlefield effect in sync.
+// Keep the HUD icon and the matching battlefield effect in sync
 function showStatus(badge, active) {
   const visual = document.querySelector('#' + badge.id + '-visual')
   badge.classList.toggle('active', active)
@@ -370,7 +393,7 @@ function clearBattleAnimations() {
   }
 }
 
-// Keep a shield visible until it breaks or the round's animations end.
+// Keep a shield visible until it breaks or the round's animations end
 // setTimeout: https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout
 function keepShieldVisible(badge, shieldedThisRound, removeAfter) {
   // matchMedia: https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia
