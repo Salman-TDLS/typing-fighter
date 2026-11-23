@@ -6,6 +6,28 @@
   <title>Typing Fighter</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="js/app.js" defer></script>
+  <link rel="preload" as="image" href="assets/battle/forest-clearing.webp">
+  <link rel="preload" as="image" href="assets/battle/player-ghost-skull.webp">
+  <link rel="preload" as="image" href="assets/battle/enemy-ghost-skull.webp">
+  <link rel="preload" as="image" href="assets/icons/heart-full.png">
+  <link rel="preload" as="image" href="assets/icons/heart-empty.png">
+  <link rel="preload" as="image" href="assets/spells/fire.webp">
+  <link rel="preload" as="image" href="assets/spells/air.webp">
+  <link rel="preload" as="image" href="assets/spells/electric.webp">
+  <link rel="preload" as="image" href="assets/spells/water.webp">
+  <link rel="preload" as="image" href="assets/spells/rock.webp">
+  <link rel="preload" as="image" href="assets/spells/cure.webp">
+  <link rel="preload" as="image" href="assets/spells/burn.webp">
+  <link rel="preload" as="image" href="assets/spells/firestorm.webp">
+  <link rel="preload" as="image" href="assets/spells/shock.webp">
+  <link rel="preload" as="image" href="assets/spells/steam.webp">
+  <link rel="preload" as="image" href="assets/spells/shield-break.webp">
+  <link rel="preload" as="image" href="assets/spells/shield-block.webp">
+  <link rel="preload" as="image" href="assets/spells/fire-projectile.webp">
+  <link rel="preload" as="image" href="assets/spells/air-projectile.webp">
+  <link rel="preload" as="image" href="assets/spells/water-projectile.webp">
+  <link rel="preload" as="image" href="assets/spells/status-burn.webp">
+  <link rel="preload" as="image" href="assets/spells/status-wet.webp">
 </head>
 <body>
   <main>
@@ -23,10 +45,10 @@
         <p>You win if the computer reaches 0 HP and lose if you reach 0 HP. If both sides run out of spells, higher HP wins. Equal HP is a draw. Click Restart to play again.</p>
         <h2>Spells</h2>
         <ul>
-          <li><strong>fire</strong> deals 1 damage now and 1 Burn damage next round. Wet stops both.</li>
+          <li><strong>fire</strong> deals 1 damage now and 1 Burn damage next round. Fire consumes Wet for 0 damage.</li>
           <li><strong>air</strong> deals 1 damage. If Burn also lands that round, the target takes 2 total.</li>
           <li><strong>electric</strong> deals 1 damage, or 2 if the target is Wet.</li>
-          <li><strong>water</strong> deals 1 damage and breaks a Shield or makes an unshielded target Wet for the next round. If it puts out a Burn, neither Water nor Burn deals damage.</li>
+          <li><strong>water</strong> deals 1 damage and breaks a Shield or makes an unshielded target Wet for the next round. Water puts out a Burn for 0 damage and leaves the target dry.</li>
           <li><strong>rock</strong> deals no damage. It blocks damage for the rest of this round and the next, unless Water breaks the Shield.</li>
           <li><strong>cure</strong> gives you 1 HP.</li>
         </ul>
@@ -36,53 +58,64 @@
       <header class="arena-header">
         <h1 id="arena-title" aria-live="polite">Arena</h1>
         <div class="enemy-health">
-          <p>
-            Enemy HP: <span id="enemy-hp"></span>
-            <span id="enemy-burn" class="effect-badge burn"><img src="assets/icons/burn.png" alt=""> Burn</span>
-            <span id="enemy-wet" class="effect-badge wet"><img src="assets/icons/wet.png" alt=""> Wet</span>
-            <span id="enemy-shield" class="effect-badge shield"><img src="assets/icons/shield.png" alt=""> Shield</span>
-          </p>
-          <div id="enemy-round-result" class="round-result" role="status"></div>
           <div class="spell-indicators">
-            <span id="enemy-fire"><img src="assets/icons/fire.png" alt=""> fire</span>
-            <span id="enemy-air"><img src="assets/icons/air.png" alt=""> air</span>
-            <span id="enemy-electric"><img src="assets/icons/electric.png" alt=""> electric</span>
-            <span id="enemy-water"><img src="assets/icons/water.png" alt=""> water</span>
-            <span id="enemy-rock"><img src="assets/icons/rock.png" alt=""> rock</span>
-            <span id="enemy-cure"><img src="assets/icons/cure.png" alt=""> cure</span>
+            <img id="enemy-fire" src="assets/icons/fire.png" alt="Fire" title="Fire">
+            <img id="enemy-water" src="assets/icons/water.png" alt="Water" title="Water">
+            <img id="enemy-rock" src="assets/icons/rock.png" alt="Rock" title="Rock">
+            <img id="enemy-air" src="assets/icons/air.png" alt="Air" title="Air">
+            <img id="enemy-electric" src="assets/icons/electric.png" alt="Electric" title="Electric">
+            <img id="enemy-cure" src="assets/icons/cure.png" alt="Cure" title="Cure">
+          </div>
+          <div id="enemy-hp" class="hp-hearts" role="img"></div>
+          <div class="status-display">
+            <div id="enemy-round-result" class="round-result" role="status"></div>
+            <span class="hp-status">
+              <img id="enemy-burn" class="effect-badge" src="assets/icons/burn.png" alt="Burn">
+              <img id="enemy-wet" class="effect-badge" src="assets/icons/wet.png" alt="Wet">
+              <img id="enemy-shield" class="effect-badge" src="assets/icons/shield.png" alt="Shield">
+            </span>
           </div>
         </div>
       </header>
       <div class="battlefield" aria-hidden="true">
         <div class="fighter-position player-position">
           <div class="fighter-shadow"></div>
+          <span id="player-wet-visual" class="battle-status status-wet" hidden></span>
           <div class="fighter-float">
             <div id="player-fighter" class="fighter"></div>
+            <span id="player-burn-visual" class="battle-status status-burn" hidden></span>
           </div>
+          <img id="player-shield-visual" class="battle-status status-shield" src="assets/spells/status-shield.webp" alt="" hidden>
         </div>
         <div class="fighter-position enemy-position">
           <div class="fighter-shadow"></div>
+          <span id="enemy-wet-visual" class="battle-status status-wet" hidden></span>
           <div class="fighter-float">
             <div id="enemy-fighter" class="fighter"></div>
+            <span id="enemy-burn-visual" class="battle-status status-burn" hidden></span>
           </div>
+          <img id="enemy-shield-visual" class="battle-status status-shield" src="assets/spells/status-shield.webp" alt="" hidden>
         </div>
+        <div id="spell-effects"></div>
       </div>
       <div class="arena-footer">
         <div class="player-health">
-          <p>
-            HP: <span id="player-hp"></span>
-            <span id="player-burn" class="effect-badge burn"><img src="assets/icons/burn.png" alt=""> Burn</span>
-            <span id="player-wet" class="effect-badge wet"><img src="assets/icons/wet.png" alt=""> Wet</span>
-            <span id="player-shield" class="effect-badge shield"><img src="assets/icons/shield.png" alt=""> Shield</span>
-          </p>
-          <div id="player-round-result" class="round-result" role="status"></div>
+          <div class="status-display">
+            <span class="hp-status">
+              <img id="player-burn" class="effect-badge" src="assets/icons/burn.png" alt="Burn">
+              <img id="player-wet" class="effect-badge" src="assets/icons/wet.png" alt="Wet">
+              <img id="player-shield" class="effect-badge" src="assets/icons/shield.png" alt="Shield">
+            </span>
+            <div id="player-round-result" class="round-result" role="status"></div>
+          </div>
+          <div id="player-hp" class="hp-hearts" role="img"></div>
           <div class="spell-indicators">
-            <span id="player-fire"><img src="assets/icons/fire.png" alt=""> fire</span>
-            <span id="player-air"><img src="assets/icons/air.png" alt=""> air</span>
-            <span id="player-electric"><img src="assets/icons/electric.png" alt=""> electric</span>
-            <span id="player-water"><img src="assets/icons/water.png" alt=""> water</span>
-            <span id="player-rock"><img src="assets/icons/rock.png" alt=""> rock</span>
-            <span id="player-cure"><img src="assets/icons/cure.png" alt=""> cure</span>
+            <img id="player-fire" src="assets/icons/fire.png" alt="Fire" title="Fire">
+            <img id="player-water" src="assets/icons/water.png" alt="Water" title="Water">
+            <img id="player-rock" src="assets/icons/rock.png" alt="Rock" title="Rock">
+            <img id="player-air" src="assets/icons/air.png" alt="Air" title="Air">
+            <img id="player-electric" src="assets/icons/electric.png" alt="Electric" title="Electric">
+            <img id="player-cure" src="assets/icons/cure.png" alt="Cure" title="Cure">
           </div>
         </div>
         <div class="arena-controls">

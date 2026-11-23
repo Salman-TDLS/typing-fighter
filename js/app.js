@@ -7,6 +7,13 @@ const arena = document.querySelector('#arena')
 const arenaTitle = document.querySelector('#arena-title')
 const playerFighter = document.querySelector('#player-fighter')
 const enemyFighter = document.querySelector('#enemy-fighter')
+const spellEffects = document.querySelector('#spell-effects')
+const projectileDelay = 55
+const spellImpactDelay = 255
+const supportEffectDelay = 110
+const supportImpactDelay = 530
+const spellEffectsEnd = 830
+const computerCastDelay = 850
 const spell = document.querySelector('#spell')
 const spellMessage = document.querySelector('#spell-message')
 const restartButton = document.querySelector('#restart-button')
@@ -18,6 +25,16 @@ const playerShieldBadge = document.querySelector('#player-shield')
 const enemyBurnBadge = document.querySelector('#enemy-burn')
 const enemyWetBadge = document.querySelector('#enemy-wet')
 const enemyShieldBadge = document.querySelector('#enemy-shield')
+const playerEffectPosition = {
+  left: '27%', top: '58%', ground: '86%',
+  burnBadge: playerBurnBadge, wetBadge: playerWetBadge, shieldBadge: playerShieldBadge,
+  shieldPosition: { left: '40.4%', top: '65.2%', ground: '86%', width: '14%' }
+}
+const enemyEffectPosition = {
+  left: '70%', top: '47%', ground: '65%',
+  burnBadge: enemyBurnBadge, wetBadge: enemyWetBadge, shieldBadge: enemyShieldBadge,
+  shieldPosition: { left: '60.8%', top: '50.4%', ground: '65%', width: '9.7%' }
+}
 const playerRoundResult = document.querySelector('#player-round-result')
 const enemyRoundResult = document.querySelector('#enemy-round-result')
 const startingHp = 5
@@ -42,16 +59,15 @@ let playerSpells
 let enemySpells
 
 //_Functions______________________________________
-function isStartCommand() {
-  return command.value.trim().toLowerCase() === 'start'
-}
 
+//_Spell rules____________________________________
 // Work out one side's incoming damage and its effects for the next round
 function resolveDamage(effects, incomingSpell) {
   // Wet and burn from the previous round expire after this round
   const wasWet = effects.wet
   const burnDamage = effects.burnDamage
   let reason = ''
+  let impact = ''
   effects.wet = false
   effects.burnDamage = 0
 
@@ -59,39 +75,43 @@ function resolveDamage(effects, incomingSpell) {
   if (incomingSpell && incomingSpell.breaksShield) {
     if (effects.shieldRounds > 0) {
       effects.shieldRounds = 0
-      reason = 'Water broke the shield'
-    } else {
+      reason = 'Shield broken'
+      impact = 'shield-break'
+    } else if (burnDamage === 0) {
       effects.wet = true
     }
-    // If water puts out a burn, neither water nor the burn deals damage
+    // Water puts out Burn for zero damage and leaves the target dry.
     if (burnDamage > 0) {
-      return { damage: 0, reason: 'Water put out the burn' }
+      return { damage: 0, reason: 'Burn extinguished', impact: 'steam' }
     }
   }
 
   // An active shield blocks damage
   if (effects.shieldRounds > 0) {
     if (burnDamage > 0 || (incomingSpell && incomingSpell.damage > 0)) {
-      reason = 'Rock blocked damage'
+      reason = 'Shield blocked the hit'
+      impact = 'shield-block'
     }
-    return { damage: 0, reason: reason }
+    return { damage: 0, reason: reason, impact: impact }
   }
 
   if (!incomingSpell) {
     if (burnDamage > 0) {
       reason = 'Burn'
+      impact = 'burn'
     }
-    return { damage: burnDamage, reason: reason }
+    return { damage: burnDamage, reason: reason, impact: impact }
   }
 
-  // Wet stops fire before it deals damage or starts a burn
+  // Fire uses up Wet for zero damage.
   if (wasWet && incomingSpell.name === 'fire') {
-    return { damage: burnDamage, reason: 'Wet stopped fire' }
+    return { damage: 0, reason: 'Fire cleared Wet', impact: 'steam' }
   }
 
   let damage = burnDamage + incomingSpell.damage
   if (incomingSpell.damage > 0 && reason === '') {
-    reason = incomingSpell.name
+    reason = incomingSpell.name[0].toUpperCase() + incomingSpell.name.slice(1)
+    impact = incomingSpell.name
   }
   if (incomingSpell.burnDamage) {
     effects.burnDamage = incomingSpell.burnDamage
@@ -99,6 +119,7 @@ function resolveDamage(effects, incomingSpell) {
   if (wasWet && incomingSpell.wetBonusDamage) {
     damage = damage + incomingSpell.wetBonusDamage
     reason = 'Electric + Wet'
+    impact = 'shock'
   }
   if (burnDamage > 0) {
     if (reason === '') {
@@ -106,83 +127,18 @@ function resolveDamage(effects, incomingSpell) {
     } else {
       reason = reason + ' + Burn'
     }
-  }
-  return { damage: damage, reason: reason }
-} 
-
-// Show what changed HP in the round that just ended
-function showRoundResult(display, hit, healing) {
-  let text = hit.reason
-  if (hit.damage > 0) {
-    text = '-' + hit.damage + ' HP · ' + text
-  } else if (text !== '') {
-    text = '0 damage · ' + text
-  }
-
-  if (healing > 0) {
-    if (text !== '') {
-      text = text + ' · '
-    }
-    text = text + '+' + healing + ' HP · Cure'
-  }
-
-  display.textContent = text
-  display.classList.toggle('damage', hit.damage > 0)
-  display.classList.toggle('healing', hit.damage === 0 && healing > 0)
-} 
-
-// The side with more HP wins. Equal HP is a draw
-function showDuelResult() {
-  if (playerHp > enemyHp) {
-    arenaTitle.textContent = 'You win'
-  } else if (playerHp < enemyHp) {
-    arenaTitle.textContent = 'You lose'
-  } else {
-    arenaTitle.textContent = 'Draw'
-  }
-}
-
-// Update HP, effects, and which control the player can use
-function updateDuelDisplay(duelEnded) {
-  playerHpDisplay.textContent = playerHp
-  enemyHpDisplay.textContent = enemyHp
-  spell.disabled = duelEnded
-  restartButton.hidden = !duelEnded
-
-  playerBurnBadge.classList.toggle('active', !duelEnded && playerEffects.burnDamage > 0)
-  playerWetBadge.classList.toggle('active', !duelEnded && playerEffects.wet)
-  playerShieldBadge.classList.toggle('active', !duelEnded && playerEffects.shieldRounds > 0)
-  enemyBurnBadge.classList.toggle('active', !duelEnded && enemyEffects.burnDamage > 0)
-  enemyWetBadge.classList.toggle('active', !duelEnded && enemyEffects.wet)
-  enemyShieldBadge.classList.toggle('active', !duelEnded && enemyEffects.shieldRounds > 0)
-}
-
-// Stop any animation left over when a new round or duel starts
-// getAnimations: https://developer.mozilla.org/en-US/docs/Web/API/Element/getAnimations
-function clearBattleAnimations() {
-  for (const fighter of [playerFighter, enemyFighter]) {
-    for (const animation of fighter.getAnimations()) {
-      animation.cancel()
+    if (incomingSpell.name === 'air') {
+      impact = 'firestorm'
+    } else if (impact === '') {
+      impact = 'burn'
     }
   }
+  return { damage: damage, reason: reason, impact: impact }
 }
 
-// Play the eight frames in the cast or hit row
-// animate: https://developer.mozilla.org/en-US/docs/Web/API/Element/animate
-// steps: https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/steps
-function animateFighter(fighter, action, delay) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    return
-  }
-
-  let row = '0%'
-  if (action === 'hit') {
-    row = '100%'
-  }
-  fighter.animate([
-    { backgroundPosition: '0% ' + row },
-    { backgroundPosition: '100% ' + row }
-  ], { duration: 320, delay: delay, easing: 'steps(8, jump-none)' })
+//_Duel flow______________________________________
+function isStartCommand() {
+  return command.value.trim().toLowerCase() === 'start'
 }
 
 // Reset both sides for the first duel or a restart
@@ -281,13 +237,270 @@ function playRound(spellIndex) {
   clearBattleAnimations()
   animateFighter(playerFighter, 'cast', 0)
   if (enemyHit.damage > 0) {
-    animateFighter(enemyFighter, 'hit', 160)
+    animateFighter(enemyFighter, 'hit', getImpactDelay(playerSpell))
   }
   if (computerSpell) {
-    animateFighter(enemyFighter, 'cast', 480)
+    animateFighter(enemyFighter, 'cast', computerCastDelay)
   }
   if (playerHit.damage > 0) {
-    animateFighter(playerFighter, 'hit', 640)
+    animateFighter(playerFighter, 'hit', computerCastDelay + getImpactDelay(computerSpell))
+  }
+  // Play each cast on its own turn and show matching combos once.
+  showSpellEffects(playerSpell, enemyHit, playerEffectPosition, enemyEffectPosition, 0)
+  if (enemyHit.impact !== playerHit.impact || !isComboEffect(enemyHit.impact)) {
+    showSpellEffects(computerSpell, playerHit, enemyEffectPosition, playerEffectPosition, computerCastDelay)
+  }
+}
+
+// The side with more HP wins. Equal HP is a draw
+function showDuelResult() {
+  if (playerHp > enemyHp) {
+    arenaTitle.textContent = 'You win'
+  } else if (playerHp < enemyHp) {
+    arenaTitle.textContent = 'You lose'
+  } else {
+    arenaTitle.textContent = 'Draw'
+  }
+}
+
+//_HUD and feedback_______________________________
+// Show what changed HP in the round that just ended
+function showRoundResult(display, hit, healing) {
+  let text = hit.reason
+  if (hit.damage > 0) {
+    text = '-' + hit.damage + ' HP · ' + text
+  }
+
+  if (healing > 0) {
+    if (text !== '') {
+      text = text + ' · '
+    }
+    text = text + '+' + healing + ' HP · Cure'
+  }
+
+  display.textContent = text
+  display.classList.toggle('damage', hit.damage > 0)
+  display.classList.toggle('healing', hit.damage === 0 && healing > 0)
+}
+
+// Show one filled heart per HP and outline the missing hearts
+function showHearts(display, hp, fighterName) {
+  display.textContent = ''
+  let heartSlots = startingHp
+  if (hp > heartSlots) {
+    heartSlots = hp
+  }
+
+  for (let index = 0; index < heartSlots; index = index + 1) {
+    // createElement: https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+    const heart = document.createElement('img')
+    if (index < hp) {
+      heart.src = 'assets/icons/heart-full.png'
+    } else {
+      heart.src = 'assets/icons/heart-empty.png'
+    }
+    heart.alt = ''
+    // appendChild: https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild
+    display.appendChild(heart)
+  }
+
+  // setAttribute: https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute
+  display.setAttribute('aria-label', fighterName + ' has ' + hp + ' health points')
+}
+
+// Keep the HUD icon and the matching battlefield effect in sync.
+function showStatus(badge, active) {
+  const visual = document.querySelector('#' + badge.id + '-visual')
+  badge.classList.toggle('active', active)
+  visual.hidden = !active
+}
+
+// Update HP, effects, and which control the player can use
+function updateDuelDisplay(duelEnded) {
+  showHearts(playerHpDisplay, playerHp, 'Player')
+  showHearts(enemyHpDisplay, enemyHp, 'Enemy')
+  spell.disabled = duelEnded
+  restartButton.hidden = !duelEnded
+
+  showStatus(playerBurnBadge, !duelEnded && playerEffects.burnDamage > 0)
+  showStatus(playerWetBadge, !duelEnded && playerEffects.wet)
+  showStatus(playerShieldBadge, !duelEnded && playerEffects.shieldRounds > 0)
+  showStatus(enemyBurnBadge, !duelEnded && enemyEffects.burnDamage > 0)
+  showStatus(enemyWetBadge, !duelEnded && enemyEffects.wet)
+  showStatus(enemyShieldBadge, !duelEnded && enemyEffects.shieldRounds > 0)
+}
+
+//_Animations_____________________________________
+// Stop any animation left over when a new round or duel starts
+// getAnimations: https://developer.mozilla.org/en-US/docs/Web/API/Element/getAnimations
+function clearBattleAnimations() {
+  spellEffects.textContent = ''
+  for (const fighter of [playerFighter, enemyFighter]) {
+    for (const animation of fighter.getAnimations()) {
+      animation.cancel()
+    }
+  }
+}
+
+// Play the eight frames in the cast or hit row
+// animate: https://developer.mozilla.org/en-US/docs/Web/API/Element/animate
+// steps: https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/steps
+function animateFighter(fighter, action, delay) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return
+  }
+
+  let row = '0%'
+  if (action === 'hit') {
+    row = '100%'
+  }
+  fighter.animate([
+    { backgroundPosition: '0% ' + row },
+    { backgroundPosition: '100% ' + row }
+  ], { duration: 460, delay: delay, easing: 'steps(8, jump-none)' })
+}
+
+// Step through the effect frames before showing the status it applies.
+function animateSpellEffect(name, from, to, delay, duration, onGround, statusBadge) {
+  const revealStatus = statusBadge && statusBadge.classList.contains('active')
+  if (revealStatus) {
+    showStatus(statusBadge, false)
+  }
+
+  const effect = document.createElement('div')
+  effect.classList.add('spell-effect')
+  if (from === enemyEffectPosition || from === enemyEffectPosition.shieldPosition) {
+    effect.classList.add('enemy-spell-effect')
+  }
+  if (name === 'cure') {
+    effect.classList.add('cure-effect')
+  }
+  if (name === 'water') {
+    effect.classList.add('water-impact')
+  }
+  effect.style.backgroundImage = 'url(assets/spells/' + name + '.webp)'
+  let startTop = from.top
+  let endTop = to.top
+  if (onGround) {
+    startTop = from.ground
+    endTop = to.ground
+    effect.classList.add('ground-effect')
+  }
+  effect.style.left = from.left
+  effect.style.top = startTop
+  if (from.width && !onGround) {
+    effect.style.width = from.width
+  }
+  if (from !== to) {
+    effect.classList.add('spell-projectile')
+    if (from === enemyEffectPosition) {
+      effect.style.transform = 'scaleX(-1)'
+    }
+  }
+  spellEffects.appendChild(effect)
+
+  const animation = effect.animate([
+    { backgroundPositionX: '0%', opacity: 1 },
+    { backgroundPositionX: '100%', opacity: 1 }
+  ], { delay: delay, duration: duration, easing: 'steps(12, jump-none)' })
+
+  // Projectiles travel smoothly while their own frames change.
+  if (from !== to) {
+    effect.animate([
+      { left: from.left, top: startTop },
+      { left: to.left, top: endTop }
+    ], { delay: delay, duration: duration })
+  }
+
+  // finish: https://developer.mozilla.org/en-US/docs/Web/API/Animation/finish_event
+  animation.addEventListener('finish', () => {
+    // A restart or a new round clears effects before they can reveal a status.
+    if (effect.parentElement === spellEffects) {
+      effect.remove()
+      if (revealStatus) {
+        showStatus(statusBadge, true)
+      }
+    }
+  })
+}
+
+function isGroundEffect(name) {
+  return name === 'shock' || name === 'steam' || name === 'shield-break'
+}
+
+function isComboEffect(name) {
+  return name === 'firestorm' || name === 'shock' || name === 'steam' || name === 'shield-break'
+}
+
+function isSupportSpell(cast) {
+  return cast && (cast.healing || cast.shieldRounds)
+}
+
+function getImpactDelay(cast) {
+  if (isSupportSpell(cast)) {
+    return supportImpactDelay
+  }
+  return spellImpactDelay
+}
+
+// Fire and Water affect the target, while Rock shields its caster.
+function getSpellStatus(cast, caster, target) {
+  if (!cast) {
+    return
+  }
+  if (cast.burnDamage) {
+    return target.burnBadge
+  }
+  if (cast.breaksShield) {
+    return target.wetBadge
+  }
+  if (cast.shieldRounds) {
+    return caster.shieldBadge
+  }
+}
+
+// Show the cast from its caster and the result on the target.
+function showSpellEffects(cast, hit, caster, target, delay) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return
+  }
+
+  const impactDelay = getImpactDelay(cast)
+  const supportSpell = isSupportSpell(cast)
+  const statusBadge = getSpellStatus(cast, caster, target)
+  if (hit.impact) {
+    let position = target
+    if (hit.impact === 'shield-block' || hit.impact === 'shield-break') {
+      position = target.shieldPosition
+    }
+    // Rock reveals the caster's shield when Rock's own animation ends.
+    let impactBadge
+    if (!supportSpell) {
+      impactBadge = statusBadge
+    }
+    animateSpellEffect(hit.impact, position, position, delay + impactDelay,
+      spellEffectsEnd - impactDelay, isGroundEffect(hit.impact), impactBadge)
+  }
+
+  // The combo already shows the whole hit, so it uses one effect.
+  if (isComboEffect(hit.impact)) {
+    return
+  }
+
+  if (supportSpell) {
+    let duration = 580
+    let position = caster
+    if (hit.impact) {
+      duration = impactDelay - supportEffectDelay
+    }
+    if (cast.shieldRounds) {
+      position = caster.shieldPosition
+    }
+    animateSpellEffect(cast.name, position, position, delay + supportEffectDelay, duration,
+      false, statusBadge)
+  } else if (cast && cast.name !== 'electric') {
+    animateSpellEffect(cast.name + '-projectile', caster, target, delay + projectileDelay,
+      spellImpactDelay - projectileDelay, false)
   }
 }
 
@@ -344,4 +557,3 @@ document.querySelector('#spell-form').addEventListener('submit', (event) => {
 })
 
 restartButton.addEventListener('click', startDuel)
-
