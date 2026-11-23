@@ -57,6 +57,7 @@ let playerEffects
 let enemyEffects
 let playerSpells
 let enemySpells
+const shieldRemovalTimers = []
 
 //_Functions______________________________________
 
@@ -108,7 +109,7 @@ function resolveDamage(effects, incomingSpell) {
     return { damage: 0, reason: 'Fire cleared Wet', impact: 'steam' }
   }
 
-  let damage = burnDamage + incomingSpell.damage
+  let damage = incomingSpell.damage
   if (incomingSpell.damage > 0 && reason === '') {
     reason = incomingSpell.name[0].toUpperCase() + incomingSpell.name.slice(1)
     impact = incomingSpell.name
@@ -121,7 +122,9 @@ function resolveDamage(effects, incomingSpell) {
     reason = 'Electric + Wet'
     impact = 'shock'
   }
-  if (burnDamage > 0) {
+  // Electric skips the pending Burn damage.
+  if (burnDamage > 0 && incomingSpell.name !== 'electric') {
+    damage = damage + burnDamage
     if (reason === '') {
       reason = 'Burn'
     } else {
@@ -181,6 +184,8 @@ function playRound(spellIndex) {
   if (playerSpell.shieldRounds) {
     playerEffects.shieldRounds = playerSpell.shieldRounds
   }
+  const playerShielded = playerEffects.shieldRounds > 0
+  const enemyStartedShielded = enemyEffects.shieldRounds > 0
   const enemyHit = resolveDamage(enemyEffects, playerSpell)
   enemyHp = enemyHp - enemyHit.damage
   playerHp = playerHp + playerSpell.healing
@@ -204,6 +209,8 @@ function playRound(spellIndex) {
       enemyIndicator.classList.toggle('used', true)
     }
   }
+
+  const enemyShielded = enemyStartedShielded || enemyEffects.shieldRounds > 0
 
   // Age both shields once per round, after both turns
   if (playerEffects.shieldRounds > 0) {
@@ -235,6 +242,21 @@ function playRound(spellIndex) {
 
   // Show the player's cast before the computer's reply.
   clearBattleAnimations()
+  let animationEnd = spellEffectsEnd
+  if (computerSpell) {
+    animationEnd = computerCastDelay + spellEffectsEnd
+  }
+  let playerShieldEnd = animationEnd
+  let enemyShieldEnd = animationEnd
+  if (computerSpell && computerSpell.breaksShield) {
+    playerShieldEnd = computerCastDelay + spellImpactDelay
+  }
+  if (enemyStartedShielded && playerSpell.breaksShield) {
+    enemyShieldEnd = spellImpactDelay
+  }
+  keepShieldVisible(playerShieldBadge, playerShielded, playerShieldEnd)
+  keepShieldVisible(enemyShieldBadge, enemyShielded, enemyShieldEnd)
+
   animateFighter(playerFighter, 'cast', 0)
   if (enemyHit.damage > 0) {
     animateFighter(enemyFighter, 'hit', getImpactDelay(playerSpell))
@@ -335,11 +357,31 @@ function updateDuelDisplay(duelEnded) {
 // getAnimations: https://developer.mozilla.org/en-US/docs/Web/API/Element/getAnimations
 function clearBattleAnimations() {
   spellEffects.textContent = ''
+  // clearTimeout: https://developer.mozilla.org/en-US/docs/Web/API/Window/clearTimeout
+  for (const timer of shieldRemovalTimers) {
+    clearTimeout(timer)
+  }
+  shieldRemovalTimers.length = 0
   for (const fighter of [playerFighter, enemyFighter]) {
     for (const animation of fighter.getAnimations()) {
+      // animation.cancel: https://developer.mozilla.org/en-US/docs/Web/API/Animation/cancel
       animation.cancel()
     }
   }
+}
+
+// Keep a shield visible until it breaks or the round's animations end.
+// setTimeout: https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout
+function keepShieldVisible(badge, shieldedThisRound, removeAfter) {
+  // matchMedia: https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia
+  if (!shieldedThisRound || badge.classList.contains('active') ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return
+  }
+
+  showStatus(badge, true)
+  const timer = setTimeout(() => showStatus(badge, false), removeAfter)
+  shieldRemovalTimers.push(timer)
 }
 
 // Play the eight frames in the cast or hit row
@@ -374,9 +416,6 @@ function animateSpellEffect(name, from, to, delay, duration, onGround, statusBad
   }
   if (name === 'cure') {
     effect.classList.add('cure-effect')
-  }
-  if (name === 'water') {
-    effect.classList.add('water-impact')
   }
   effect.style.backgroundImage = 'url(assets/spells/' + name + '.webp)'
   let startTop = from.top
@@ -425,7 +464,7 @@ function animateSpellEffect(name, from, to, delay, duration, onGround, statusBad
 }
 
 function isGroundEffect(name) {
-  return name === 'shock' || name === 'steam' || name === 'shield-break'
+  return name === 'water' || name === 'shock' || name === 'steam' || name === 'shield-break'
 }
 
 function isComboEffect(name) {

@@ -41,17 +41,67 @@
       <!-- details and summary: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details -->
       <details class="instructions">
         <summary>How to play</summary>
-        <p>Both sides start at 5 HP. Type an unused spell and press Enter to cast it. You go first, then the computer replies if it still has HP. Each side can use each spell once per duel.</p>
-        <p>You win if the computer reaches 0 HP and lose if you reach 0 HP. If both sides run out of spells, higher HP wins. Equal HP is a draw. Click Restart to play again.</p>
-        <h2>Spells</h2>
-        <ul>
-          <li><strong>fire</strong> deals 1 damage now and 1 Burn damage next round. Fire consumes Wet for 0 damage.</li>
-          <li><strong>air</strong> deals 1 damage. If Burn also lands that round, the target takes 2 total.</li>
-          <li><strong>electric</strong> deals 1 damage, or 2 if the target is Wet.</li>
-          <li><strong>water</strong> deals 1 damage and breaks a Shield or makes an unshielded target Wet for the next round. Water puts out a Burn for 0 damage and leaves the target dry.</li>
-          <li><strong>rock</strong> deals no damage. It blocks damage for the rest of this round and the next, unless Water breaks the Shield.</li>
-          <li><strong>cure</strong> gives you 1 HP.</li>
-        </ul>
+        <h2>Start a duel</h2>
+        <p>Type <strong>start</strong> and press Enter. Both fighters start at 5 HP.</p>
+        <p>Type a spell name and press Enter to cast it. The computer replies if it has HP left. Each fighter can use each spell once per duel.</p>
+
+        <div class="instruction-columns">
+          <div class="spell-guide">
+            <h2>Spells</h2>
+            <ul>
+              <li><img src="assets/icons/fire.png" alt="Fire" title="Fire"> = (−1 HP) + <img src="assets/icons/burn.png" alt="Burn" title="Burn"></li>
+              <li><img src="assets/icons/water.png" alt="Water" title="Water"> = (−1 HP) + <img src="assets/icons/wet.png" alt="Wet" title="Wet"></li>
+              <li><img src="assets/icons/rock.png" alt="Rock" title="Rock"> = <img src="assets/icons/shield.png" alt="Shield" title="Shield"></li>
+              <li><img src="assets/icons/air.png" alt="Air" title="Air"> = (−1 HP)</li>
+              <li><img src="assets/icons/electric.png" alt="Electric" title="Electric"> = (−1 HP)</li>
+              <li><img src="assets/icons/cure.png" alt="Cure" title="Cure"> = (+1 HP)</li>
+            </ul>
+          </div>
+
+          <div class="combo-guide">
+            <h2>Combos</h2>
+            <!-- table: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/table -->
+            <table class="combo-matrix">
+              <thead>
+                <tr>
+                  <th scope="col">Spell</th>
+                  <th scope="col"><img src="assets/icons/burn.png" alt=""> Burn</th>
+                  <th scope="col"><img src="assets/icons/wet.png" alt=""> Wet</th>
+                  <th scope="col"><img src="assets/icons/shield.png" alt=""> Shield</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row"><img src="assets/icons/fire.png" alt=""> Fire</th>
+                  <td>—</td>
+                  <td>Clears<br>Wet</td>
+                  <td>Blocked</td>
+                </tr>
+                <tr>
+                  <th scope="row"><img src="assets/icons/water.png" alt=""> Water</th>
+                  <td>Clears<br>Burn</td>
+                  <td>—</td>
+                  <td>−1 HP</td>
+                </tr>
+                <tr>
+                  <th scope="row"><img src="assets/icons/air.png" alt=""> Air</th>
+                  <td>−2 HP</td>
+                  <td>−1 HP</td>
+                  <td>Blocked</td>
+                </tr>
+                <tr>
+                  <th scope="row"><img src="assets/icons/electric.png" alt=""> Electric</th>
+                  <td>−1 HP</td>
+                  <td>−2 HP</td>
+                  <td>Blocked</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h2>Win or restart</h2>
+        <p>The first fighter to reach 0 HP loses. If both run out of spells, the fighter with more HP wins. Equal HP is a draw. Click <strong>Restart</strong> to play again.</p>
       </details>
     </section>
     <section id="arena" hidden>

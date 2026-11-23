@@ -82,7 +82,7 @@ input:focus::placeholder {
 
 /* How to play panel on the start menu */
 .instructions {
-  max-width: 520px;
+  max-width: 720px;
   margin: 0 auto;
   font-size: 16px;
   line-height: 1.6;
@@ -94,12 +94,66 @@ input:focus::placeholder {
 }
 
 .instructions ul {
-  padding-left: 24px;
+  list-style: none;
+  padding-left: 0;
   text-align: left;
 }
 
 .instructions li {
   margin-bottom: 8px;
+}
+
+.instructions img {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+/* Flexbox: https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Flexbox */
+.instruction-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.spell-guide {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 230px;
+  flex-grow: 1;
+}
+
+.spell-guide ul {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.combo-guide {
+  flex-basis: 370px;
+  flex-grow: 2;
+  min-width: 0;
+}
+
+/* table-layout: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/table-layout */
+.combo-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.combo-matrix th, .combo-matrix td {
+  padding: 6px 3px;
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.combo-matrix th img {
+  display: block;
+  margin: 0 auto 3px;
 }
 
 .arena-header, .arena-footer {
@@ -312,12 +366,7 @@ input:focus::placeholder {
   max-width: 90px;
 }
 
-/* Line up the Water splash with the fighter's body. */
-.water-impact {
-  translate: -50% -70%;
-}
-
-/* Keep these combo effects near the grass. */
+/* Keep splashes and ground effects on the grass. */
 .ground-effect {
   translate: -50% -78%;
 }
@@ -418,7 +467,9 @@ input:focus::placeholder {
   cursor: pointer;
 }
 
-/* Small screens */
+/* Small screens
+   width: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/width
+   @media: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media */
 @media (max-width: 600px) {
   main {
     padding: 24px 0;
