@@ -2,7 +2,7 @@
 
 A turn-based magic dueling game where players cast spells by typing their names.
 
-**Current status:** Type `start` and press Enter to open the solo arena. Both sides start at 5 HP.
+**Current status:** Open **How to play** on the start menu to see the rules and spell effects. Type `start` and press Enter to open the solo arena. Both sides start at 5 HP.
 `fire` deals 1 damage on impact and adds 1 burn damage in the following round only. `air` deals 1 damage, for 2 total if the target takes burn damage that round.
 `water` normally deals 1 damage. It leaves an unshielded target wet for the next round, or breaks a `rock` shield and leaves the target dry.
 If `water` hits a target with a pending burn, it puts out the fire. Neither `water` nor the burn deals damage that round.
@@ -15,12 +15,12 @@ Burn, Wet, and Shield badges stay visible beside both HP counters and light up w
 A line below each HP counter explains the last round's damage, healing, blocked hits, and combos.
 The arena shows the result when the duel ends. Click **Restart** to begin a new duel.
 
-## Planned Gameplay
+## How to Play
 
-Players face off in magical duels, using speed, elemental effects, and strategy to defeat their opponents.
+You and the computer take turns casting spells.
 
 1. **Choose a spell** – Pick one you haven't used in this duel.
-2. **Cast your spell** – Type its name and press Enter to use it immediately.
+2. **Cast your spell** – Type its name and press Enter to use it immediately. An unknown or already-used spell shows a message and lets you try again without spending your turn.
 3. **Computer responds** – If it still has HP, it casts its next unused spell.
 4. **Start the next round** – Your turn and the computer's turn count as one round for spell effects. You can then cast another unused spell while both sides have HP.
 
@@ -34,6 +34,9 @@ Players face off in magical duels, using speed, elemental effects, and strategy 
 
 - Turn-based spellcasting through typing
 - Multiple spells with unique elemental effects
+- An angled battle arena with animated fighters
+
+The forest and fighter sprites were made with OpenAI's image generator. The fighters are based on [Ghost Skull by Quaternius](https://poly.pizza/m/TX8r9WBXpe), released under CC0.
 
 ## Project Planning
 

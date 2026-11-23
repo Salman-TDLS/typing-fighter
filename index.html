@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Typing Fighter</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/app.js" defer></script>
 </head>
 <body>
   <main>
@@ -33,47 +33,67 @@
       </details>
     </section>
     <section id="arena" hidden>
-      <h1 id="arena-title" aria-live="polite">Arena</h1>
-      <div class="player-health">
-        <p>
-          HP: <span id="player-hp"></span>
-          <span id="player-burn" class="effect-badge burn">Burn</span>
-          <span id="player-wet" class="effect-badge wet">Wet</span>
-          <span id="player-shield" class="effect-badge shield">Shield</span>
-        </p>
-        <div id="player-round-result" class="round-result" role="status"></div>
-        <div class="spell-indicators">
-          <span id="player-fire">fire</span>
-          <span id="player-air">air</span>
-          <span id="player-electric">electric</span>
-          <span id="player-water">water</span>
-          <span id="player-rock">rock</span>
-          <span id="player-cure">cure</span>
+      <header class="arena-header">
+        <h1 id="arena-title" aria-live="polite">Arena</h1>
+        <div class="enemy-health">
+          <p>
+            Enemy HP: <span id="enemy-hp"></span>
+            <span id="enemy-burn" class="effect-badge burn"><img src="assets/icons/burn.png" alt=""> Burn</span>
+            <span id="enemy-wet" class="effect-badge wet"><img src="assets/icons/wet.png" alt=""> Wet</span>
+            <span id="enemy-shield" class="effect-badge shield"><img src="assets/icons/shield.png" alt=""> Shield</span>
+          </p>
+          <div id="enemy-round-result" class="round-result" role="status"></div>
+          <div class="spell-indicators">
+            <span id="enemy-fire"><img src="assets/icons/fire.png" alt=""> fire</span>
+            <span id="enemy-air"><img src="assets/icons/air.png" alt=""> air</span>
+            <span id="enemy-electric"><img src="assets/icons/electric.png" alt=""> electric</span>
+            <span id="enemy-water"><img src="assets/icons/water.png" alt=""> water</span>
+            <span id="enemy-rock"><img src="assets/icons/rock.png" alt=""> rock</span>
+            <span id="enemy-cure"><img src="assets/icons/cure.png" alt=""> cure</span>
+          </div>
+        </div>
+      </header>
+      <div class="battlefield" aria-hidden="true">
+        <div class="fighter-position player-position">
+          <div class="fighter-shadow"></div>
+          <div class="fighter-float">
+            <div id="player-fighter" class="fighter"></div>
+          </div>
+        </div>
+        <div class="fighter-position enemy-position">
+          <div class="fighter-shadow"></div>
+          <div class="fighter-float">
+            <div id="enemy-fighter" class="fighter"></div>
+          </div>
         </div>
       </div>
-      <div class="enemy-health">
-        <p>
-          Enemy HP: <span id="enemy-hp"></span>
-          <span id="enemy-burn" class="effect-badge burn">Burn</span>
-          <span id="enemy-wet" class="effect-badge wet">Wet</span>
-          <span id="enemy-shield" class="effect-badge shield">Shield</span>
-        </p>
-        <div id="enemy-round-result" class="round-result" role="status"></div>
-        <div class="spell-indicators">
-          <span id="enemy-fire">fire</span>
-          <span id="enemy-air">air</span>
-          <span id="enemy-electric">electric</span>
-          <span id="enemy-water">water</span>
-          <span id="enemy-rock">rock</span>
-          <span id="enemy-cure">cure</span>
+      <div class="arena-footer">
+        <div class="player-health">
+          <p>
+            HP: <span id="player-hp"></span>
+            <span id="player-burn" class="effect-badge burn"><img src="assets/icons/burn.png" alt=""> Burn</span>
+            <span id="player-wet" class="effect-badge wet"><img src="assets/icons/wet.png" alt=""> Wet</span>
+            <span id="player-shield" class="effect-badge shield"><img src="assets/icons/shield.png" alt=""> Shield</span>
+          </p>
+          <div id="player-round-result" class="round-result" role="status"></div>
+          <div class="spell-indicators">
+            <span id="player-fire"><img src="assets/icons/fire.png" alt=""> fire</span>
+            <span id="player-air"><img src="assets/icons/air.png" alt=""> air</span>
+            <span id="player-electric"><img src="assets/icons/electric.png" alt=""> electric</span>
+            <span id="player-water"><img src="assets/icons/water.png" alt=""> water</span>
+            <span id="player-rock"><img src="assets/icons/rock.png" alt=""> rock</span>
+            <span id="player-cure"><img src="assets/icons/cure.png" alt=""> cure</span>
+          </div>
+        </div>
+        <div class="arena-controls">
+          <form id="spell-form">
+            <label for="spell">Type a spell and press Enter</label>
+            <input id="spell" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="spell-message">
+            <p id="spell-message" role="status"></p>
+          </form>
+          <button id="restart-button" type="button" hidden>Restart</button>
         </div>
       </div>
-      <form id="spell-form">
-        <label for="spell">Type a spell and press Enter</label>
-        <input id="spell" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="spell-message">
-        <p id="spell-message" role="status"></p>
-      </form>
-      <button id="restart-button" type="button" hidden>Restart</button>
     </section>
   </main>
 </body>

@@ -5,6 +5,8 @@ const startWord = document.querySelector('#start-word')
 const menu = document.querySelector('#menu')
 const arena = document.querySelector('#arena')
 const arenaTitle = document.querySelector('#arena-title')
+const playerFighter = document.querySelector('#player-fighter')
+const enemyFighter = document.querySelector('#enemy-fighter')
 const spell = document.querySelector('#spell')
 const spellMessage = document.querySelector('#spell-message')
 const restartButton = document.querySelector('#restart-button')
@@ -127,7 +129,7 @@ function showRoundResult(display, hit, healing) {
   display.textContent = text
   display.classList.toggle('damage', hit.damage > 0)
   display.classList.toggle('healing', hit.damage === 0 && healing > 0)
-}
+} 
 
 // The side with more HP wins. Equal HP is a draw
 function showDuelResult() {
@@ -155,8 +157,37 @@ function updateDuelDisplay(duelEnded) {
   enemyShieldBadge.classList.toggle('active', !duelEnded && enemyEffects.shieldRounds > 0)
 }
 
+// Stop any animation left over when a new round or duel starts
+// getAnimations: https://developer.mozilla.org/en-US/docs/Web/API/Element/getAnimations
+function clearBattleAnimations() {
+  for (const fighter of [playerFighter, enemyFighter]) {
+    for (const animation of fighter.getAnimations()) {
+      animation.cancel()
+    }
+  }
+}
+
+// Play the eight frames in the cast or hit row
+// animate: https://developer.mozilla.org/en-US/docs/Web/API/Element/animate
+// steps: https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/steps
+function animateFighter(fighter, action, delay) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return
+  }
+
+  let row = '0%'
+  if (action === 'hit') {
+    row = '100%'
+  }
+  fighter.animate([
+    { backgroundPosition: '0% ' + row },
+    { backgroundPosition: '100% ' + row }
+  ], { duration: 320, delay: delay, easing: 'steps(8, jump-none)' })
+}
+
 // Reset both sides for the first duel or a restart
 function startDuel() {
+  clearBattleAnimations()
   playerHp = startingHp
   enemyHp = startingHp
   playerEffects = { shieldRounds: 0, wet: false, burnDamage: 0 }
@@ -200,9 +231,10 @@ function playRound(spellIndex) {
 
   let playerHit = { damage: 0, reason: '' }
   let enemyHealing = 0
+  let computerSpell
   // A computer at zero HP cannot cast back
   if (enemyHp > 0) {
-    const computerSpell = enemySpells[0]
+    computerSpell = enemySpells[0]
     if (computerSpell && computerSpell.shieldRounds) {
       enemyEffects.shieldRounds = computerSpell.shieldRounds
     }
@@ -244,6 +276,19 @@ function playRound(spellIndex) {
 
   showRoundResult(playerRoundResult, playerHit, playerSpell.healing)
   showRoundResult(enemyRoundResult, enemyHit, enemyHealing)
+
+  // Show the player's cast before the computer's reply.
+  clearBattleAnimations()
+  animateFighter(playerFighter, 'cast', 0)
+  if (enemyHit.damage > 0) {
+    animateFighter(enemyFighter, 'hit', 160)
+  }
+  if (computerSpell) {
+    animateFighter(enemyFighter, 'cast', 480)
+  }
+  if (playerHit.damage > 0) {
+    animateFighter(playerFighter, 'hit', 640)
+  }
 }
 
 //_Event listeners________________________________
@@ -299,3 +344,4 @@ document.querySelector('#spell-form').addEventListener('submit', (event) => {
 })
 
 restartButton.addEventListener('click', startDuel)
+

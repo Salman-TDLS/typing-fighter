@@ -62,7 +62,7 @@ input {
   text-align: center;
 }
 
-/* Hide the "here" hint when the input is selected.
+/* Hide the "here" hint when the input is selected
    :focus: https://developer.mozilla.org/en-US/docs/Web/CSS/:focus
    ::placeholder: https://developer.mozilla.org/en-US/docs/Web/CSS/::placeholder */
 input:focus::placeholder {
@@ -102,11 +102,117 @@ input:focus::placeholder {
   margin-bottom: 8px;
 }
 
-/* Arena HP positions
-   position: fixed: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/position#fixed */
-.player-health, .enemy-health {
-  position: fixed;
-  max-width: 85%;
+.arena-header, .arena-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+#arena-title {
+  margin: 0;
+  font-size: 40px;
+}
+
+.arena-header {
+  margin-bottom: 16px;
+}
+
+.arena-footer {
+  align-items: flex-start;
+  margin-top: 16px;
+}
+
+.arena-controls {
+  font-size: 16px;
+}
+
+#spell {
+  margin: 6px auto;
+  padding: 10px;
+  font-size: 22px;
+}
+
+/* The smaller opponent sits higher in the scene to look farther away
+   aspect-ratio: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/aspect-ratio */
+.battlefield {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #6b943a url('../assets/battle/forest-clearing.webp') center / 100% 100%;
+}
+
+.fighter-position {
+  position: absolute;
+}
+
+.player-position {
+  width: 32%;
+  left: 11%;
+  bottom: 12%;
+}
+
+.enemy-position {
+  width: 22%;
+  right: 19%;
+  bottom: 34%;
+}
+
+/* The position box lines up each fighter with its shadow */
+.fighter-shadow {
+  position: absolute;
+  width: 46%;
+  height: 4%;
+  left: 27%;
+  bottom: 1%;
+  border-radius: 50%;
+  background: #345b20;
+  opacity: 0.28;
+  box-shadow: 0 0 8px #345b20;
+}
+
+.fighter-float {
+  position: relative;
+}
+
+/* Float the art above its shadow while the sprite plays cast and hit frames
+   prefers-reduced-motion: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion */
+@media (prefers-reduced-motion: no-preference) {
+  .fighter-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .enemy-position .fighter-float {
+    animation-delay: -1.5s;
+  }
+}
+
+/* @keyframes: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3%);
+  }
+}
+
+/* Each sheet has eight frames across and two rows, one for each action
+   background-size: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/background-size */
+.fighter {
+  aspect-ratio: 1;
+  background-size: 800% 200%;
+  background-repeat: no-repeat;
+}
+
+#player-fighter {
+  background-image: url('../assets/battle/player-ghost-skull.webp');
+}
+
+#enemy-fighter {
+  background-image: url('../assets/battle/enemy-ghost-skull.webp');
 }
 
 .player-health p, .enemy-health p {
@@ -114,15 +220,43 @@ input:focus::placeholder {
 }
 
 .player-health {
-  bottom: 24px;
-  left: 24px;
   text-align: left;
 }
 
 .enemy-health {
-  top: 24px;
-  right: 24px;
   text-align: right;
+}
+
+@media (max-width: 550px) {
+  main {
+    padding: 24px 0;
+  }
+
+  .arena-header, .arena-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #arena-title {
+    text-align: left;
+    font-size: 32px;
+  }
+
+  .player-health p, .enemy-health p {
+    font-size: 18px;
+  }
+
+  .spell-indicators span {
+    width: 31%;
+    text-align: center;
+  }
+}
+
+/* Keep the small icons aligned with their labels */
+.spell-indicators img, .effect-badge img {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
 }
 
 /* Show ready spells in gold and cross out used spells */
@@ -150,6 +284,10 @@ input:focus::placeholder {
   text-decoration: line-through;
 }
 
+.spell-indicators .used img, .effect-badge img {
+  opacity: 0.45;
+}
+
 /* Status badges stay dim until an effect is active */
 .effect-badge {
   padding: 3px 6px;
@@ -157,10 +295,15 @@ input:focus::placeholder {
   font-size: 14px;
   background: #252525;
   color: #aaaaaa;
+  white-space: nowrap;
 }
 
 .effect-badge.active {
   font-weight: bold;
+}
+
+.effect-badge.active img {
+  opacity: 1;
 }
 
 .effect-badge.burn.active {
@@ -180,6 +323,7 @@ input:focus::placeholder {
 
 /* Explain the last round's damage, healing, or blocked hit */
 .round-result {
+  min-height: 1.6em;
   color: #bdbdbd;
   font-size: 14px;
   line-height: 1.6;
