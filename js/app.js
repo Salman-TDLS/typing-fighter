@@ -178,6 +178,8 @@ function startDuel() {
   lastComputerOrder = orderIndex
   enemySpells = computerSpellOrders[orderIndex].slice()
 
+  // classList: https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+  arenaTitle.classList.remove('result-win', 'result-loss', 'result-draw')
   arenaTitle.textContent = 'Arena'
   spell.value = ''
   spellMessage.textContent = ''
@@ -295,16 +297,23 @@ function playRound(spellIndex) {
   if (enemyHit.impact !== playerHit.impact || !isComboEffect(enemyHit.impact)) {
     showSpellEffects(computerSpell, playerHit, enemyEffectPosition, playerEffectPosition, computerCastDelay)
   }
+  if (duelEnded) {
+    // Let the last hit frames finish before the ending animation.
+    animateDuelEnd(animationEnd + 180)
+  }
 }
 
 // The side with more HP wins. Equal HP is a draw
 function showDuelResult() {
   if (playerHp > enemyHp) {
     arenaTitle.textContent = 'You win'
+    arenaTitle.classList.add('result-win')
   } else if (playerHp < enemyHp) {
     arenaTitle.textContent = 'You lose'
+    arenaTitle.classList.add('result-loss')
   } else {
     arenaTitle.textContent = 'Draw'
+    arenaTitle.classList.add('result-draw')
   }
 }
 
@@ -423,6 +432,32 @@ function animateFighter(fighter, action, delay) {
     { backgroundPosition: '0% ' + row },
     { backgroundPosition: '100% ' + row }
   ], { duration: 460, delay: delay, easing: 'steps(8, jump-none)' })
+}
+
+// After the final spell, lift the winner and drop the loser toward the ground.
+// fill: https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#fill
+// transform: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/transform
+function animateDuelEnd(delay) {
+  if (playerHp === enemyHp || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return
+  }
+
+  let winner = playerFighter
+  let loser = enemyFighter
+  if (playerHp < enemyHp) {
+    winner = enemyFighter
+    loser = playerFighter
+  }
+
+  winner.animate([
+    { transform: 'translateY(0)' },
+    { transform: 'translateY(-30%)' }
+  ], { duration: 700, delay: delay, easing: 'ease-out', fill: 'forwards' })
+
+  loser.animate([
+    { transform: 'translateY(0) rotate(0)', opacity: 1 },
+    { transform: 'translateY(24%) rotate(-24deg)', opacity: 0.55 }
+  ], { duration: 560, delay: delay, easing: 'ease-in', fill: 'forwards' })
 }
 
 // Step through the effect frames before showing the status it applies.

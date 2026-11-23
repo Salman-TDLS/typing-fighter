@@ -168,6 +168,19 @@ input:focus::placeholder {
   font-size: 40px;
 }
 
+/* Duel result colors */
+#arena-title.result-win {
+  color: #81e6a7;
+}
+
+#arena-title.result-loss {
+  color: #ff8f8f;
+}
+
+#arena-title.result-draw {
+  color: #f9a8d4;
+}
+
 .arena-header {
   margin-bottom: 8px;
 }
