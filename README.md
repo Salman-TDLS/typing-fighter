@@ -32,6 +32,13 @@ The fighters are based on the CC0 model Ghost Skull by [Quaternius](https://poly
 - JavaScript with DOM manipulation and the Web Animations API
 - GitHub Pages for hosting
 
+## References
+
+- [Build Typing Game with Javascript](https://www.youtube.com/watch?v=E_tZH9R_zi8)
+- [GitHub README File Guide: How to Use Markdown for Perfect Formatting](https://www.youtube.com/watch?v=s_MV82dy0jY)
+- [Intro to Web Animations API](https://www.youtube.com/watch?v=Ge2gLXt-Q_U&list=PLKiuVKZics1d3kt6rrfnVSMScWjQQOA5l)
+- [How to Animate CSS Properties with JavaScript](https://www.youtube.com/watch?v=LE9EaIZdjFM)
+
 ## Next Steps
 
 - Add sound effects.
