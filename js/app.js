@@ -89,7 +89,7 @@ function resolveDamage(effects, incomingSpell) {
     } else if (burnDamage === 0) {
       effects.wet = true
     }
-    // Water puts out Burn for zero damage and leaves the target dry.
+    // Water puts out Burn for zero damage and leaves the target dry
     if (burnDamage > 0) {
       return { damage: 0, reason: 'Burn extinguished', impact: 'steam' }
     }
@@ -112,7 +112,7 @@ function resolveDamage(effects, incomingSpell) {
     return { damage: burnDamage, reason: reason, impact: impact }
   }
 
-  // Fire uses up Wet for zero damage.
+  // Fire uses up Wet for zero damage
   if (wasWet && incomingSpell.name === 'fire') {
     return { damage: 0, reason: 'Fire cleared Wet', impact: 'steam' }
   }

@@ -346,7 +346,7 @@ input:focus::placeholder {
   pointer-events: none;
 }
 
-/* Show one frame of the twelve-frame sheet at the spell's position.
+/* Show one frame of the twelve-frame sheet at the spell's position
    translate: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/translate */
 .spell-effect {
   position: absolute;
@@ -357,13 +357,13 @@ input:focus::placeholder {
   translate: -50% -50%;
 }
 
-/* Scale effects down for the fighter farther back in the arena. */
+/* Scale effects down for the fighter farther back in the arena */
 .enemy-spell-effect {
   width: 26%;
   max-width: 185px;
 }
 
-/* Give Cure enough space to circle each floating fighter. */
+/* Give Cure enough space to circle each floating fighter */
 .cure-effect {
   width: 38%;
   max-width: 280px;
@@ -379,7 +379,7 @@ input:focus::placeholder {
   max-width: 90px;
 }
 
-/* Keep splashes and ground effects on the grass. */
+/* Keep splashes and ground effects on the grass */
 .ground-effect {
   translate: -50% -78%;
 }
@@ -424,7 +424,7 @@ input:focus::placeholder {
   text-align: right;
 }
 
-/* Show spell icons in a row and dim them after use. */
+/* Show spell icons in a row and dim them after use */
 .spell-indicators {
   display: flex;
   flex-wrap: wrap;
@@ -451,7 +451,7 @@ input:focus::placeholder {
   opacity: 1;
 }
 
-/* Leave room for damage and healing feedback on narrow screens. */
+/* Leave room for damage and healing feedback on narrow screens */
 .round-result {
   display: flex;
   align-items: center;
