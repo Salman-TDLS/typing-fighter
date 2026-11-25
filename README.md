@@ -30,7 +30,6 @@ The fighters are based on the CC0 model Ghost Skull by [Quaternius](https://poly
 - HTML
 - CSS with Flexbox
 - JavaScript with DOM manipulation and the Web Animations API
-- GitHub Pages for hosting
 
 ## References
 
